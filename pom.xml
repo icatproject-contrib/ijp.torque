@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.icatproject</groupId>
     <artifactId>ijp.r92</artifactId>
-    <version>2.0.1-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>portal</name>
     <packaging>war</packaging>
 
@@ -45,7 +45,6 @@
     </repositories>
 
     <properties>
-        <gwt.version>2.5.1</gwt.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <repoUrl>http://www.icatproject.org/mvn/repo</repoUrl>
@@ -116,27 +115,6 @@
                     <source>1.7</source>
                     <target>1.7</target>
                     <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>gwt-maven-plugin</artifactId>
-                <version>2.5.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <!-- goal>test</goal -->
-                            <!-- goal>generateAsync</goal -->
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <runTarget>portal/index.html</runTarget>
-                    <hostedWebapp>${webappDirectory}</hostedWebapp>
-                    <style>PRETTY</style> <!-- set to OBFUSTICATED for production -->
-                    <strict>true</strict>
                 </configuration>
             </plugin>
 
