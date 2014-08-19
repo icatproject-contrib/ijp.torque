@@ -2,11 +2,11 @@
 <persistence version="1.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
 
-    <persistence-unit name="r92" transaction-type="JTA">
+    <persistence-unit name="unixbatch" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <jta-data-source>jdbc/r92</jta-data-source>
-        <class>org.icatproject.ijp.r92.Job</class>
-        <class>org.icatproject.ijp.r92.Account</class>
+        <jta-data-source>jdbc/unixbatch</jta-data-source>
+        <class>org.icatproject.ijp.unixbatch.Job</class>
+        <class>org.icatproject.ijp.unixbatch.Account</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.target-server" value="SunAS9" />
