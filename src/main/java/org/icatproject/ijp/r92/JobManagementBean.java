@@ -358,15 +358,14 @@ public class JobManagementBean {
 	}
 
 	public String listStatus(String sessionId) throws SessionException {
-		String username = getUserName(sessionId);
-		List<Job> jobs = entityManager.createNamedQuery(Job.FIND_BY_USERNAME, Job.class)
-				.setParameter("username", username).getResultList();
-		StringBuilder sb = new StringBuilder();
-		for (Job job : jobs) {
-			sb.append(job.getId() + ", " + job.getStatus() + "\n");
-		}
-		return sb.toString();
-
+		 String username = getUserName(sessionId);
+		 List<Job> jobs = entityManager.createNamedQuery(Job.FIND_BY_USERNAME, Job.class)
+		 .setParameter("username", username).getResultList();
+		 StringBuilder sb = new StringBuilder();
+		 for (Job job : jobs) {
+		 sb.append(job.getId() + ", " + job.getStatus() + "\n");
+		 }
+		 return sb.toString();
 	}
 
 	public String getStatus(String jobId, String sessionId) throws SessionException,

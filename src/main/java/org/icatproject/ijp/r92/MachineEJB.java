@@ -65,7 +65,7 @@ public class MachineEJB {
 		}
 	}
 
-	@PersistenceContext(unitName = "ijp")
+	@PersistenceContext(unitName = "r92")
 	private EntityManager entityManager;
 
 	private String poolPrefix;

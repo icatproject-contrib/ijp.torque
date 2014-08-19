@@ -19,7 +19,6 @@ import org.icatproject.ijp.r92.exceptions.ParameterException;
 import org.icatproject.ijp.r92.exceptions.SessionException;
 
 @Stateless
-@Path("jm")
 public class JobManager {
 
 	@EJB
@@ -57,7 +56,7 @@ public class JobManager {
 	 */
 	public void delete(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId)
 			throws SessionException, ForbiddenException, InternalException, ParameterException {
-		 jobManagementBean.delete(sessionId, jobId);
+		jobManagementBean.delete(sessionId, jobId);
 	}
 
 	@GET
