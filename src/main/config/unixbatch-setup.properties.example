@@ -4,7 +4,7 @@
 
 # Driver and connection properties for MySQL
 driver=com.mysql.jdbc.jdbc2.optional.MysqlDataSource
-dbProperties=user=icat:password=secret:databaseName=r92
+dbProperties=user=icat:password=secret:databaseName=unixbatch
 
 # Glassfish home, must contain "glassfish/domains"
 glassfish=/home/fisher/pf/glassfish4
