@@ -1,9 +1,8 @@
 package org.icatproject.ijp.r92;
 
+import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ws.rs.DELETE;
@@ -12,191 +11,146 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import org.icatproject.ijp.r92.JobManagementBean.OutputType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.icatproject.ijp.r92.exceptions.ForbiddenException;
+import org.icatproject.ijp.r92.exceptions.InternalException;
+import org.icatproject.ijp.r92.exceptions.ParameterException;
+import org.icatproject.ijp.r92.exceptions.SessionException;
 
 @Stateless
 @Path("jm")
 public class JobManager {
 
-	private final static Logger logger = LoggerFactory.getLogger(JobManager.class);
-
 	@EJB
 	private JobManagementBean jobManagementBean;
 
-
 	@POST
 	@Path("cancel/{jobId}")
-	public String cancel(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId) {
-
-		checkCredentials(sessionId);
-		try {
-			return jobManagementBean.cancel(sessionId, jobId);
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ForbiddenException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (InternalException e) {
-			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
-					.entity(e.getMessage() + "\n").build());
-		}
-	}
-
-	private void checkCredentials(String sessionId) {
-		if (sessionId == null) {
-			throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-					.entity("No sessionId was specified\n").build());
-		}
+	/**
+	 * Cancel the specified job if permitted to do so
+	 *  
+	 * @param jobId as returned by the call to submit
+	 * @param sessionId the icatSession id of the submitter
+	 * 
+	 * @throws SessionException
+	 * @throws ForbiddenException
+	 * @throws InternalException
+	 */
+	public void cancel(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId)
+			throws SessionException, ForbiddenException, InternalException {
+		jobManagementBean.cancel(sessionId, jobId);
 	}
 
 	@DELETE
 	@Path("delete/{jobId}")
-	public String delete(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId) {
-		checkCredentials(sessionId);
-		try {
-			return jobManagementBean.delete(sessionId, jobId);
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ForbiddenException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (InternalException e) {
-			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ParameterException e) {
-			throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-					.entity(e.getMessage() + "\n").build());
-		}
-
+	/**
+	 * Delete all information on the specified job if permitted to do so and if it has completed
+	 * 
+	 * @param jobId as returned by the call to submit
+	 * @param sessionId the icatSession id of the submitter
+	 * 
+	 * @throws SessionException
+	 * @throws ForbiddenException
+	 * @throws InternalException
+	 * @throws ParameterException
+	 */
+	public void delete(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId)
+			throws SessionException, ForbiddenException, InternalException, ParameterException {
+		 jobManagementBean.delete(sessionId, jobId);
 	}
 
 	@GET
 	@Path("error/{jobId}")
-	public String getError(@PathParam("jobId") String jobId,
-			@QueryParam("sessionId") String sessionId) {
-
-		checkCredentials(sessionId);
-
-		try {
-			return jobManagementBean.getJobOutput(sessionId, jobId, OutputType.ERROR_OUTPUT);
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ForbiddenException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (InternalException e) {
-			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
-					.entity(e.getMessage() + "\n").build());
-		}
+	/**
+	 * Stream the contents of the jobs standard standard error. If the job has not  
+	 * finished running the output will be incomplete.
+	 * 
+	 * @param jobId as returned by the call to submit
+	 * @param sessionId the icatSession id of the submitter
+	 * 
+	 * @return stream
+	 * 
+	 * @throws SessionException
+	 * @throws ForbiddenException
+	 * @throws InternalException
+	 */
+	public InputStream getError(@PathParam("jobId") String jobId,
+			@QueryParam("sessionId") String sessionId) throws SessionException, ForbiddenException,
+			InternalException {
+		return jobManagementBean.getJobOutput(sessionId, jobId, OutputType.ERROR_OUTPUT);
 	}
 
 	@GET
 	@Path("output/{jobId}")
-	public String getOutput(@PathParam("jobId") String jobId,
-			@QueryParam("sessionId") String sessionId) {
+	/**
+	 * Stream the contents of the jobs standard standard output. If the job has not  
+	 * finished running the output will be incomplete.
+	 * 
+	 * @param jobId as returned by the call to submit
+	 * @param sessionId the icatSession id of the submitter
+	 * 
+	 * @return stream
+	 * 
+	 * @throws SessionException
+	 * @throws ForbiddenException
+	 * @throws InternalException
+	 */
+	public InputStream getOutput(@PathParam("jobId") String jobId,
+			@QueryParam("sessionId") String sessionId) throws SessionException, ForbiddenException,
+			InternalException {
+		return jobManagementBean.getJobOutput(sessionId, jobId, OutputType.STANDARD_OUTPUT);
 
-		checkCredentials(sessionId);
-
-		try {
-			return jobManagementBean.getJobOutput(sessionId, jobId, OutputType.STANDARD_OUTPUT);
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ForbiddenException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (InternalException e) {
-			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
-					.entity(e.getClass() + " reports " + e.getMessage() + "\n").build());
-		}
 	}
 
 	@GET
 	@Path("status")
-	public String getStatus(@QueryParam("sessionId") String sessionId) {
-		checkCredentials(sessionId);
-		try {
-			return jobManagementBean.listStatus(sessionId);
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		}
+	/** Get the list of known jobs that may be queried by the user identified by the sessionId */
+	public String getStatus(@QueryParam("sessionId") String sessionId) throws SessionException {
+		return jobManagementBean.listStatus(sessionId);
 	}
 
 	@GET
 	@Path("status/{jobId}")
+	/**
+	 * Get the status of a specific job
+	 *  
+	 * @param jobId as returned by the call to submit
+	 * @param sessionId the icatSession id of the submitter
+	 * 
+	 * @return json holding
+	 * 
+	 * @throws SessionException
+	 * @throws ForbiddenException
+	 */
 	public String getStatus(@PathParam("jobId") String jobId,
-			@QueryParam("sessionId") String sessionId) {
-
-		checkCredentials(sessionId);
-		try {
-			return jobManagementBean.getStatus(jobId, sessionId);
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ForbiddenException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		}
-	}
-
-	@PostConstruct
-	void init() {
-//		try {
-//			XmlFileManager xmlFileManager = new XmlFileManager();
-//			jobTypes = xmlFileManager.getJobTypeMappings().getJobTypesMap();
-//			logger.debug("Initialised JobManager");
-//		} catch (Exception e) {
-//			String msg = e.getClass().getName() + " reports " + e.getMessage();
-//			logger.error(msg);
-//			throw new RuntimeException(msg);
-//		}
+			@QueryParam("sessionId") String sessionId) throws SessionException, ForbiddenException {
+		return jobManagementBean.getStatus(jobId, sessionId);
 	}
 
 	@POST
 	@Path("submit")
-	public String submit(@QueryParam("jobName") String executable,
+	/**
+	 * Submit a job
+	 * 
+	 * @param sessionId the icatSession id of the submitter
+	 * @param executable the executable name
+	 * @param parameters the executables parameters
+	 * @param interactive true if interactive else false
+	 * @param family the name of the family. A family identifies a group of user accounts. If omitted the default family can be used.
+	 *  
+	 * @return The job id - this could be the id assigned by the underlying batch system.
+	 * 
+	 * @throws InternalException
+	 * @throws SessionException
+	 * @throws ParameterException
+	 */
+	public String submit(@QueryParam("sessionId") String sessionId,
+			@QueryParam("executable") String executable,
 			@QueryParam("parameter") List<String> parameters,
-			@QueryParam("sessionId") String sessionId,
-			@QueryParam("interactive") boolean interactive, @QueryParam("family") String family) {
-
-		checkCredentials(sessionId);
-		try {
-			logger.debug("submit: " + executable + " with parameters " + parameters
-					+ " under sessionId " + sessionId);
-
-			if (executable == null) {
-				throw new ParameterException("No executable was specified");
-			}
-
-			if (interactive) {
-				return jobManagementBean.submitInteractive(sessionId, executable,
-						parameters, family);
-				
-			} else {
-				return jobManagementBean.submitBatch(sessionId, executable, parameters, family);
-
-			}
-		} catch (InternalException e) {
-			throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR)
-					.entity(e.getMessage() + "\n").build());
-		} catch (SessionException e) {
-			throw new WebApplicationException(Response.status(Status.FORBIDDEN)
-					.entity(e.getMessage() + "\n").build());
-		} catch (ParameterException e) {
-			throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-					.entity(e.getMessage() + "\n").build());
-		}
-
+			@QueryParam("interactive") boolean interactive, @QueryParam("family") String family)
+			throws InternalException, SessionException, ParameterException {
+		return jobManagementBean.submit(sessionId, executable, parameters, family, interactive);
 	}
 
 }

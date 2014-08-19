@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
 import java.nio.file.FileSystems;
@@ -23,11 +24,18 @@ import javax.ejb.Schedule;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.icatproject.ICAT;
 import org.icatproject.IcatException_Exception;
+import org.icatproject.ijp.r92.exceptions.ForbiddenException;
+import org.icatproject.ijp.r92.exceptions.InternalException;
+import org.icatproject.ijp.r92.exceptions.ParameterException;
+import org.icatproject.ijp.r92.exceptions.SessionException;
 import org.icatproject.utils.ShellCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +73,16 @@ public class JobManagementBean {
 
 	@PostConstruct
 	void init() {
+
 		// try {
+		// XmlFileManager xmlFileManager = new XmlFileManager();
+		// jobTypes = xmlFileManager.getJobTypeMappings().getJobTypesMap();
+		// logger.debug("Initialised JobManager");
+		// } catch (Exception e) {
+		// String msg = e.getClass().getName() + " reports " + e.getMessage();
+		// logger.error(msg);
+		// throw new RuntimeException(msg);
+
 		// icat = Icat.getIcat();
 		//
 		// Unmarshaller um = JAXBContext.newInstance(Families.class).createUnmarshaller();
@@ -106,42 +123,30 @@ public class JobManagementBean {
 				.setParameter("username", username).getResultList();
 	}
 
-	public String getJobOutput(String sessionId, String jobId, OutputType outputType)
+	public InputStream getJobOutput(String sessionId, String jobId, OutputType outputType)
 			throws SessionException, ForbiddenException, InternalException {
 		Job job = getJob(sessionId, jobId);
 		String ext = "." + (outputType == OutputType.STANDARD_OUTPUT ? "o" : "e")
 				+ jobId.split("\\.")[0];
 		Path path = FileSystems.getDefault().getPath("/home/batch/jobs",
 				job.getBatchFilename() + ext);
-		boolean delete = false;
 		if (!Files.exists(path)) {
 			logger.debug("Getting intermediate output for " + jobId);
 			ShellCommand sc = new ShellCommand("sudo", "-u", "batch", "ssh", job.getWorkerNode(),
 					"sudo", "push_output", job.getBatchUsername(), path.toFile().getName());
 			if (sc.isError()) {
-				return "Temporary? problem getting output " + sc.getStderr();
+				throw new InternalException("Temporary? problem getting output " + sc.getStderr());
 			}
 			path = FileSystems.getDefault().getPath("/home/batch/jobs",
 					job.getBatchFilename() + ext + "_tmp");
-			delete = true;
 		}
 		if (Files.exists(path)) {
 			logger.debug("Returning output for " + jobId);
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			try {
-				Files.copy(path, baos);
+				return Files.newInputStream(path);
 			} catch (IOException e) {
 				throw new InternalException(e.getClass() + " reports " + e.getMessage());
 			}
-			if (delete) {
-				try {
-					Files.deleteIfExists(path);
-				} catch (IOException e) {
-					throw new InternalException("Unable to delete temporary file");
-				}
-			}
-			return baos.toString();
-
 		} else {
 			throw new InternalException("No output file available at the moment");
 		}
@@ -344,6 +349,7 @@ public class JobManagementBean {
 
 	private String getUserName(String sessionId) throws SessionException {
 		try {
+			checkCredentials(sessionId);
 			return icat.getUserName(sessionId);
 		} catch (IcatException_Exception e) {
 			throw new SessionException("IcatException " + e.getFaultInfo().getType() + " "
@@ -376,6 +382,7 @@ public class JobManagementBean {
 	}
 
 	private Job getJob(String sessionId, String jobId) throws SessionException, ForbiddenException {
+		checkCredentials(sessionId);
 		String username = getUserName(sessionId);
 		Job job = entityManager.find(Job.class, jobId);
 		if (job == null || !job.getUsername().equals(username)) {
@@ -384,8 +391,9 @@ public class JobManagementBean {
 		return job;
 	}
 
-	public String delete(String sessionId, String jobId) throws SessionException,
-			ForbiddenException, InternalException, ParameterException {
+	public void delete(String sessionId, String jobId) throws SessionException, ForbiddenException,
+			InternalException, ParameterException {
+		checkCredentials(sessionId);
 		Job job = getJob(sessionId, jobId);
 		if (!job.getStatus().equals("C")) {
 			throw new ParameterException(
@@ -402,17 +410,34 @@ public class JobManagementBean {
 			}
 		}
 		entityManager.remove(job);
-		return "";
 	}
 
-	public String cancel(String sessionId, String jobId) throws SessionException,
-			ForbiddenException, InternalException {
+	public void cancel(String sessionId, String jobId) throws SessionException, ForbiddenException,
+			InternalException {
+		checkCredentials(sessionId);
 		Job job = getJob(sessionId, jobId);
 		ShellCommand sc = new ShellCommand("qdel", job.getId());
 		if (sc.isError()) {
 			throw new InternalException("Unable to cancel job " + sc.getStderr());
 		}
-		return "";
+
+	}
+
+	private void checkCredentials(String sessionId) {
+		if (sessionId == null) {
+			throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
+					.entity("No sessionId was specified\n").build());
+		}
+	}
+
+	public String submit(String sessionId, String executable, List<String> parameters,
+			String family, boolean interactive) throws InternalException, SessionException,
+			ParameterException {
+		if (interactive) {
+			return submitInteractive(sessionId, executable, parameters, family);
+		} else {
+			return submitBatch(sessionId, executable, parameters, family);
+		}
 	}
 
 }

@@ -23,6 +23,7 @@ import javax.persistence.PersistenceContext;
 import org.icatproject.ICAT;
 import org.icatproject.IcatException_Exception;
 
+import org.icatproject.ijp.r92.exceptions.InternalException;
 import org.icatproject.utils.CheckedProperties;
 import org.icatproject.utils.CheckedProperties.CheckedPropertyException;
 import org.icatproject.utils.ShellCommand;
