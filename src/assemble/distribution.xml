@@ -7,15 +7,15 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <outputDirectory>ijp.unixbatch</outputDirectory>
+            <outputDirectory>ijp.r92</outputDirectory>
             <directory>${basedir}/src/main/scripts</directory>
         </fileSet>
         <fileSet>
-            <outputDirectory>ijp.unixbatch</outputDirectory>
+            <outputDirectory>ijp.r92</outputDirectory>
             <directory>${basedir}/src/main/config</directory>
         </fileSet>
         <fileSet>
-            <outputDirectory>ijp.unixbatch</outputDirectory>
+            <outputDirectory>ijp.r92</outputDirectory>
             <directory>${basedir}</directory>
             <filtered>true</filtered>
             <includes>
@@ -27,16 +27,15 @@
 
     <dependencySets>
         <dependencySet>
-            <outputDirectory>ijp.unixbatch</outputDirectory>
+            <outputDirectory>ijp.r92</outputDirectory>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
-                <include>org.icatproject:ijp.unixbatch</include>
+                <include>org.icatproject:ijp.r92</include>
             </includes>
         </dependencySet>
 
         <dependencySet>
-            <outputDirectory>
-                ijp.unixbatch</outputDirectory>
+            <outputDirectory>ijp.r92</outputDirectory>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <unpack>true</unpack>
             <unpackOptions>
