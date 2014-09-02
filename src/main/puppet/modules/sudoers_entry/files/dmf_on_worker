@@ -1,0 +1,1 @@
+batch ALL=(root:root) NOPASSWD: /usr/local/sbin/push_output

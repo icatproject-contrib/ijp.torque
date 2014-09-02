@@ -1,0 +1,36 @@
+#!/bin/sh
+
+# Prologue and epilogue do not apply to dmf's jobs
+if [ "$2" = "dmf" ]; then
+	exit 0
+fi
+
+echo "Epilogue starting"
+
+id=${1%%.*}
+job=$4
+o=${job}.o${id}
+e=${job}.e${id}
+path=/home/$2
+
+if [ -f $path/lock/id -a $(cat $path/lock/id) = $1 ]; then
+
+    echo "Will deliver output and clean up"
+
+    server=$(cat /etc/torque/server_name)
+
+    chown batch:batch $path/$o $path/$e
+    chmod 644 $path/$o $path/$e
+    su -l -c "scp $path/$o $path/$e ${server}:jobs/" batch
+
+    rm -rf $path
+    mkdir $path
+    chown $2:$2 $path
+
+else
+    
+    echo "This is not my job so don't clean up"
+
+fi
+
+exit 0

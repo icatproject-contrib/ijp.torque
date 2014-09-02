@@ -1,0 +1,184 @@
+<jobType sessionId='true'>
+    <name>view_project</name>
+    <executable>/opt/ijp/bin/view_project.py</executable>
+    <multiple>false</multiple>
+    <type>interactive</type>
+    <datasetTypes>project</datasetTypes>
+    <jobOptions>
+        <name>View</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter></programParameter>
+        <condition></condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View beads</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--beads</programParameter>
+        <condition>numBeadFiles&gt;0</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View reg beads</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--reg-beads</programParameter>
+        <condition>numBeadFiles&gt;0 &amp;&amp; numChannels&gt;1</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View reg errors (in non-ref coords)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--non-ref-reg-error</programParameter>
+        <condition>numBeadFiles&gt;0 &amp;&amp; numChannels&gt;1 &amp;&amp; numNonRefRegErrorFiles&gt;1 &amp;&amp; numRefRegErrorFiles&gt;1</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View inverse reg errors (in ref coords)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--ref-reg-error</programParameter>
+        <condition>numBeadFiles&gt;0 &amp;&amp; numChannels&gt;1 &amp;&amp; numNonRefRegErrorFiles&gt;1 &amp;&amp; numRefRegErrorFiles&gt;1</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View whitelights</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--whitelights</programParameter>
+        <condition>numWhitelightFiles&gt;0</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View whitelights (no tracks)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--whitelights --no-tracks</programParameter>
+        <condition>numWhitelightFiles&gt;0 &amp;&amp; numChannels==1</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View reg whitelights</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--reg-whitelights</programParameter>
+        <condition>numWhitelightFiles&gt;0 &amp;&amp; numChannels&gt;1</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View reg whitelights (no tracks)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--reg-whitelights --no-tracks</programParameter>
+        <condition>numWhitelightFiles&gt;0 &amp;&amp; numChannels&gt;1</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View evidencemaps</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--evidencemaps</programParameter>
+        <condition>numEvidenceMapsFiles&gt;0</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View reg residual frames</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--reg-residualframes</programParameter>
+        <condition></condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View reg model frames</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--reg-modelframes</programParameter>
+        <condition></condition>
+    </jobOptions>
+    <jobOptions>
+        <name>Track method</name>
+        <type>enumeration</type>
+        <programParameter>--trackmethod</programParameter>
+        <values></values>
+        <values>Simple</values>
+        <values>SLH</values>
+        <values>Biggles</values>
+        <values>Simulation</values>
+    </jobOptions>
+    <jobOptions>
+        <name>Show variance image instead of image</name>
+        <type>boolean</type>
+        <programParameter>--use-sigsqimage</programParameter>
+    </jobOptions>
+    <jobOptions>
+        <name>Do not load traces</name>
+        <type>boolean</type>
+        <programParameter>--no-tracks</programParameter>
+    </jobOptions>
+    <jobOptions>
+        <name>Read features/tracks from hdf5 files (slow)</name>
+        <type>boolean</type>
+        <programParameter>--hdf5-features</programParameter>
+    </jobOptions>
+    <jobOptions>
+        <name>Set min,max for colour scale</name>
+        <type>string</type>
+        <programParameter>--imrange</programParameter>
+        <tip>arg=min,max image value or "framestack" to calculate entire framestack range for each channel separately</tip>
+    </jobOptions>
+    <jobOptions>
+        <name>Regular expression for images in directory</name>
+        <type>string</type>
+        <programParameter>--image-pattern</programParameter>
+    </jobOptions>
+    <jobOptions>
+        <name>Do not clean levels/stats</name>
+        <type>integer</type>
+        <programParameter>--Levels.no-clean</programParameter>
+        <defaultValue>0</defaultValue>
+        <minValue>0</minValue>
+        <maxValue>10</maxValue>
+    </jobOptions>
+    <jobOptions>
+        <name>Min number of detected features per frame range of a level/state</name>
+        <type>integer</type>
+        <programParameter>--Levels.min-features</programParameter>
+        <defaultValue>2</defaultValue>
+    </jobOptions>
+    <jobOptions>
+        <name>Threshold for the Chauvenet's outlier test</name>
+        <type>integer</type>
+        <programParameter>--Levels.chauvenet-threshold</programParameter>
+        <defaultValue>2</defaultValue>
+    </jobOptions>
+    <jobOptions>
+        <name>Set the (real) EM gain by hand</name>
+        <type>float</type>
+        <programParameter>--EMCCD.em-gain</programParameter>
+    </jobOptions>
+    <jobOptions>
+        <name>Quantum efficiency</name>
+        <type>float</type>
+        <programParameter>--EMCCD.qe</programParameter>
+        <defaultValue>0.910000026</defaultValue>
+        <minValue>-1.0</minValue>
+        <maxValue>1.0</maxValue>
+    </jobOptions>
+    <jobOptions>
+        <name>Set the (real) electron/ADU by hand</name>
+        <type>float</type>
+        <programParameter>--EMCCD.electrons_adu</programParameter>
+    </jobOptions>
+    <jobOptions>
+        <name>A unique identifier of the EMCCD</name>
+        <type>string</type>
+        <programParameter>--EMCCD.id</programParameter>
+        <defaultValue>Command:Line</defaultValue>
+    </jobOptions>
+    <jobOptions>
+        <name>Quit immediately after initialisation completes</name>
+        <type>boolean</type>
+        <programParameter>--quit-on-idle</programParameter>
+        <tip>Debugging option</tip>
+    </jobOptions>
+    <jobOptions>
+        <name>Add a string to the view window title</name>
+        <type>string</type>
+        <programParameter>--tag</programParameter>
+        <tip>Useful when comparing two algorithms</tip>
+    </jobOptions>
+</jobType>
+

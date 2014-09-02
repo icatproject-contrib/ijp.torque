@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Prologue and epilogue do not apply to dmf's jobs
+if [ "$2" = "dmf" ]; then
+	exit 0
+fi
+
+echo "Prologue starting"
+
+path=/home/$2
+
+# If unable to create lock directory sleep for a while to avoid rapid looping 
+# and provide an exit code of 2 to requeue the job.
+mkdir $path/lock || {
+    sleep 60
+    exit 2
+}
+
+echo $1 > $path/lock/id
+
+echo "Job can now run"
+
+exit 0

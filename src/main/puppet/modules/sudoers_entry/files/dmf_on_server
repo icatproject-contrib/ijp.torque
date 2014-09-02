@@ -1,0 +1,2 @@
+dmf ALL=(ALL:ALL) NOPASSWD: /usr//local/bin/qsub
+dmf ALL=(batch:batch) NOPASSWD: /usr/bin/ssh

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+accountName=$1
+password=$2
+file=$3
+
+mkdir -p ~/skel/$$/.config/openbox/
+mv $file ~/skel/$$/job.sh
+echo xterm -e "~/job.sh"  > ~/skel/$$/.config/openbox/autostart
+echo "/usr/bin/openbox-session" > ~/skel/$$/.xsession
+
+cat <<EOF >  ~/skel/$$/.config/openbox/menu.xml
+<?xml version="1.0" encoding="utf-8"?>
+<openbox_menu xmlns="http://openbox.org/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://openbox.org/ file:///usr/share/openbox/menu.xsd">
+        <menu id="root-menu" label="Openbox 3">
+                <item label="Exit">
+                        <action name="Exit"/>
+                </item>
+        </menu>
+</openbox_menu>
+EOF
+
+sudo /usr/sbin/useradd -m -k ~/skel/$$ $accountName
+rm -rf ~/skel/$$
+
+echo $accountName:$password | sudo /usr/sbin/chpasswd

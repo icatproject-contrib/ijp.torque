@@ -2,7 +2,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.icatproject</groupId>
-    <artifactId>ijp.unixbatch</artifactId>
+    <artifactId>ijp.r92</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>ijp.unixbatch</name>
     <packaging>war</packaging>

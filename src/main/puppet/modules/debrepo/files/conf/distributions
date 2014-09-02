@@ -1,0 +1,6 @@
+Origin: Your Name
+Label: Your own label - i.e repo name
+Codename: ijp
+Architectures: source amd64 i386
+Components: main
+Description: Your description

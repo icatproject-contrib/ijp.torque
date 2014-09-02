@@ -1,0 +1,1 @@
+dmf ALL=(root) NOPASSWD: /usr/sbin/useradd, /usr/bin/passwd, /usr/sbin/chpasswd, /usr/sbin/userdel

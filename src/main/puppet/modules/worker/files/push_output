@@ -1,0 +1,15 @@
+#!/bin/sh
+
+#
+# The use of basename when finding the file is to make it impossible to access a file
+# outside /home/$user
+#
+
+user=$1
+file=$(basename $2)
+server=$(cat /etc/torque/server_name)
+ln -f /home/$user/$file /home/batch/$file
+chown batch:batch /home/batch/$file
+chmod 0644 /home/batch/$file
+su -l -c "scp /home/batch/$file ${server}:jobs/${file}_tmp" batch
+rm -f /home/batch/$file

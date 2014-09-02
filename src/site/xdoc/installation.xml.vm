@@ -15,8 +15,8 @@
 
                 <ul>
                     <li>
-                        The ijp.unixbatch distribution:
-                        <a href="${repoUrl}/org/icatproject/ijp.unixbatch/${project.version}/ijp.unixbatch-${project.version}-distro.zip">ijp.unixbatch-${project.version}-distro.zip</a>
+                        The ijp.r92 distribution:
+                        <a href="${repoUrl}/org/icatproject/ijp.r92/${project.version}/ijp.r92-${project.version}-distro.zip">ijp.r92-${project.version}-distro.zip</a>
                     </li>
                     <li>
                         A suitable deployed container. The installation scripts only support Glassfish.
@@ -46,7 +46,7 @@
                 </ol>
             </subsection>
 
-            <subsection name="The unixbatch-setup.properties file">
+            <subsection name="The r92-setup.properties file">
 
                 <dl>
                     <dt>driver</dt>
@@ -63,7 +63,7 @@
 
             </subsection>
 
-            <subsection name="The unixbatch.properties file">
+            <subsection name="The r92.properties file">
 
                 <dl>
                     <dt>icat.url</dt>

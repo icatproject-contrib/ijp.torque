@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<families default="batch">
+    <family name="ingest" count="10"
+        create="user { &quot;$user&quot;: ensure => present, managehome => true, shell => &quot;/bin/bash&quot;, groups => [octopus], require => Common_account[dmf], }">
+        <allowed pattern="ingest" />
+    </family>
+    <family name="batch" count="90" create="user { &quot;$user&quot;: ensure => present, managehome => true, shell => &quot;/bin/bash&quot;, }" />
+</families>
