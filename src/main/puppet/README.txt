@@ -1,0 +1,109 @@
+Setting up the ICAT Job Portal with Puppet
+==========================================
+
+All machines should have Ubuntu 12.04 (Precise Pangolin) installed and you must have ssh root access 
+either directly or using sudo from another account. Choose one machine as the server - this should 
+have enough disk space to run the ICAT Data Server. All other machines (referred to as worker nodes) 
+require little disk space.
+
+Logon on to any machine where you can check out (or export) the svn puppet module which contains this 
+README.txt, cd into it and run package.sh. This will create three tar.gz files which are needed in the 
+next step.
+
+Logon to the chosen server machine as root and set up a /root/downloads directory with the following. 
+The versions may be more recent.
+ 
+   ijp-utils-1.0.0.tar.gz
+   jdk-7u9-linux-x64.tar.gz - this is jdk 7 64bit - google for: jdk 7 oracle
+   glassfish-4.0.zip - this is glassfish - google for: glassfish
+   mysql-connector-java-5.1.21-bin.jar - mysql jdbc connector
+   puppet-config-1.0.0.tar.gz
+   puppetlabs-release-precise.deb - see http://docs.puppetlabs.com/guides/installation.html#debian-and-ubuntu
+   puppet-puppet-1.0.0.tar.gz
+   puppet-scripts-1.0.0.tar.gz
+   python-ijp-1.0.0.tar.gz
+     
+In case you need to start again it is worth keeping a copy of the downloads directory elsewhere then it
+will be quick to restore it.
+
+All other machines should have a /root/downloads directory but it need only contain puppet-scripts-1.0.0.tar.gz
+
+Puppet is used to do most of the work. This runs every half an hour and tries to bring each machine 
+into the correct state. You can initiate a run by "puppet agent -t" on the machine which you 
+want updating. This also applies to the server machine which contacts itself to do updates - that is 
+it acts both as a puppet client and the "puppet master". There will be log files in the /var/log/puppet 
+directory. The file master.log will be found only on the master and this contains an entry each time 
+it is contacted by a client. Typically it only reports errors if the puppet configuration is wrong. 
+Each machine has an agent.log which lists what changes have been made to the machine. If you have
+problems run "puppet agent -t" to get diagnostic information on the screen - there is an interlock 
+so that it will not run while it is in one of its half hourly runs.
+
+Networking
+----------
+
+You should ensure that on all machines the command "hostname -f" works by making /etc/resolv.conf a file 
+rather than a link with:
+
+domain esc.rl.ac.uk
+search esc.rl.ac.uk rl.ac.uk
+nameserver 130.246.8.13
+nameserver 130.246.72.21
+
+you may also need to patch /etc/hosts to make hostname -f work properly
+
+Also make sure that the proxy files are set up in the /etc/environment file (both http_proxy and https_proxy)
+
+To access the control panel use gnome-control-center
+
+On master
+---------
+
+After unpacking the config files in the next line you may wish to edit its contents before proceeding.
+
+ntpdate time.rl.ac.uk
+tar zxf  ~/downloads/puppet-scripts-*.tar.gz -C /root
+export PATH=$PATH:/root/scripts
+setup-master.sh
+
+If you make a mistake entering passwords you can run the setup-master.sh script again. Glassfish will 
+be reinstalled with new passwords however all other passwords will not be reset.
+
+It should report at the end a few errors from the Torque::server (because it has no clients yet) for example:
+
+   Wed Jan 30 08:55:43 +0000 2013 /Stage[main]/Torque::Server/Concat[/var/spool/torque/server_priv/nodes]/Exec[concat_/var/spool/torque/server_priv/nodes]/returns 
+                                  (notice): The fragments directory is empty, cowardly refusing to make empty config files
+   ...
+   Wed Jan 30 08:55:43 +0000 2013 /Stage[main]/Torque::Server/Service[torque-server] (warning): Skipping because of failed dependencies
+   Wed Jan 30 08:55:44 +0000 2013 Puppet (notice): Finished catalog run in 2.10 seconds
+
+Now move on to the client machines.
+
+
+On all other machines
+---------------------
+
+ntpdate time.rl.ac.uk
+tar zxf  ~/downloads/puppet-scripts-*.tar.gz -C /root
+export PATH=$PATH:/root/scripts
+setup-agent.sh <full server name>
+
+Then go to server and: 
+
+puppet cert list
+puppet cert sign --all
+
+the first command will list all the certificates that need signing and the second command will sign 
+them. At the end the command puppet cert list should output nothing. 
+
+then back on the other machine:
+
+puppet agent -t
+
+
+Notes
+-----
+
+If you reinstall the master no worker node will connect. For each worker you would need:
+
+rm -rf /var/lib/puppet/ssl
+service puppet restart
