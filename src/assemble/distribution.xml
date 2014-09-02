@@ -22,6 +22,10 @@
                 <include>*.txt</include>
             </includes>
         </fileSet>
+        <fileSet>
+            <outputDirectory>ijp.r92/puppet</outputDirectory>
+            <directory>${basedir}/src/main/puppet</directory>
+        </fileSet>
     </fileSets>
 
 

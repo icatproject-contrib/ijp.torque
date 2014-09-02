@@ -41,15 +41,13 @@ so that it will not run while it is in one of its half hourly runs.
 Networking
 ----------
 
-You should ensure that on all machines the command "hostname -f" works by making /etc/resolv.conf a file 
-rather than a link with:
+You should ensure that on all machines the command "hostname" works and gives the fqdn. If not try making 
+/etc/resolv.conf a file rather than a link with:
 
 domain esc.rl.ac.uk
 search esc.rl.ac.uk rl.ac.uk
 nameserver 130.246.8.13
 nameserver 130.246.72.21
-
-you may also need to patch /etc/hosts to make hostname -f work properly
 
 Also make sure that the proxy files are set up in the /etc/environment file (both http_proxy and https_proxy)
 
@@ -58,15 +56,14 @@ To access the control panel use gnome-control-center
 On master
 ---------
 
-After unpacking the config files in the next line you may wish to edit its contents before proceeding.
+Unpack the distro and cd to it
 
 ntpdate time.rl.ac.uk
-tar zxf  ~/downloads/puppet-scripts-*.tar.gz -C /root
-export PATH=$PATH:/root/scripts
+export PATH=$PATH:$(pwd)/puppet/scripts
 setup-master.sh
 
-If you make a mistake entering passwords you can run the setup-master.sh script again. Glassfish will 
-be reinstalled with new passwords however all other passwords will not be reset.
+If you make a mistake entering passwords you can run the setup-master.sh script again. Passwords will 
+not be reset.
 
 It should report at the end a few errors from the Torque::server (because it has no clients yet) for example:
 
@@ -82,9 +79,10 @@ Now move on to the client machines.
 On all other machines
 ---------------------
 
+unpack the distro and cd to it
+
 ntpdate time.rl.ac.uk
-tar zxf  ~/downloads/puppet-scripts-*.tar.gz -C /root
-export PATH=$PATH:/root/scripts
+export PATH=$PATH:$(pwd)/puppet/scripts
 setup-agent.sh <full server name>
 
 Then go to server and: 

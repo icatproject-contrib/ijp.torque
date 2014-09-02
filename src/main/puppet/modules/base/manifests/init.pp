@@ -4,6 +4,7 @@
 class base {
   include usergen
   include glassfish::client
+  include jdk
 
   file { "/etc/adduser.conf":
     source => "puppet:///modules/base/etc/adduser.conf",

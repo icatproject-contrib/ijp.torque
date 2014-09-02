@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+[ -d puppet/modules ] || ( echo "No puppet/modules directory"; exit 1 )
+
 fqdn=$(hostname -f)
 
 # Fix the /etc/hosts
@@ -14,9 +16,6 @@ ff02::1 ip6-allnodes
 ff02::2 ip6-allrouters
 EOF
 
-# Unpack to ~/config directory
-tar zxf ~/downloads/puppet-config-*.tar.gz -C /root
-
 # Get repos complete
 echo "Do apt-get update and add the puppetlabs repo..."
 apt-get -qq update
@@ -25,22 +24,12 @@ dpkg -i puppetlabs-release-precise.deb
 rm -f puppetlabs-release-precise.deb
 apt-get -qq update
 
-# Install jdk
-mkdir -p /usr/java
-tar zxf ~/downloads/jdk-*.tar.gz -C /usr/java
-path=/usr/java/jdk*
-update-alternatives --install "/usr/bin/java" "java" $path/bin/java 2001
-update-alternatives --install "/usr/bin/javac" "javac" $path/bin/javac 2001
-
 # Postgresql for puppetdb
 apt-get install -y postgresql
 su - postgres -c psql <<EOF
 create role puppet login password 'puppet';
 create database puppet owner = puppet;
 EOF
-
-# Set up database
-db.sh
 
 # Install rest of debs
 apt-get install -y ntp puppetmaster puppet puppetdb puppet-el vim-puppet puppetdb-terminus
@@ -101,7 +90,7 @@ master:
 EOF
 
 rm -rf /etc/puppet/modules
-deploy-puppet-modules.sh
+cp -r puppet/modules /etc/puppet
 
 SITE=/etc/puppet/manifests/site.pp
 echo "node '${fqdn}' {" > $SITE
@@ -160,19 +149,6 @@ if test ! -e  /etc/nagios3/htpasswd.users; then
     echo "*** You will be prompted for a web password for user nagiosadmin"
     htpasswd -c /etc/nagios3/htpasswd.users nagiosadmin
 fi
-
-# Set up glassfish
-glassfish-destroy.sh
-rm -rf /home/dmf/glassfish4
-cd /home/dmf
-unzip -q ~/downloads/glassfish*.zip
-echo
-echo -n "Enter value to use for glassfish admin password: "
-stty -echo
-read pw
-stty echo
-echo
-glassfish-setup.sh $pw
 
 set +e
 puppet agent -t > /dev/null 2>&1
