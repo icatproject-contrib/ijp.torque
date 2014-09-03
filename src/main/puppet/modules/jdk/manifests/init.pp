@@ -1,3 +1,3 @@
-class apache2 {
+class jdk {
   package { ["default-jdk"]: ensure => installed, }
 }

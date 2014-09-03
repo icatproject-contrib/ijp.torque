@@ -7,11 +7,11 @@
     <includeBaseDirectory>false</includeBaseDirectory>
     <fileSets>
         <fileSet>
-            <outputDirectory>ijp.r92</outputDirectory>
+            <outputDirectory>ijp.r92/puppet/modules/server/files/ijp.r92</outputDirectory>
             <directory>${basedir}/src/main/scripts</directory>
         </fileSet>
         <fileSet>
-            <outputDirectory>ijp.r92</outputDirectory>
+            <outputDirectory>ijp.r92/puppet/modules/server/files/ijp.r92</outputDirectory>
             <directory>${basedir}/src/main/config</directory>
         </fileSet>
         <fileSet>
@@ -31,7 +31,7 @@
 
     <dependencySets>
         <dependencySet>
-            <outputDirectory>ijp.r92</outputDirectory>
+            <outputDirectory>ijp.r92/puppet/modules/server/files/ijp.r92</outputDirectory>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <includes>
                 <include>org.icatproject:ijp.r92</include>
@@ -39,7 +39,7 @@
         </dependencySet>
 
         <dependencySet>
-            <outputDirectory>ijp.r92</outputDirectory>
+            <outputDirectory>ijp.r92/puppet/modules/server/files/ijp.r92</outputDirectory>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <unpack>true</unpack>
             <unpackOptions>

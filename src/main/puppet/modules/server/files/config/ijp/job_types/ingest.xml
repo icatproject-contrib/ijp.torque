@@ -1,6 +1,0 @@
-<jobType family='ingest' sessionId='true'>
-    <name>ingest</name>
-    <executable>/opt/ijp/bin/ingest.py</executable>
-    <type>batch</type>
-</jobType>
-

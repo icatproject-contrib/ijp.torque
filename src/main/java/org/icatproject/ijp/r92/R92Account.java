@@ -13,18 +13,18 @@ import javax.persistence.Transient;
 
 @Entity
 @NamedQueries({
-		@NamedQuery(name = Account.TODELETE, query = "SELECT a FROM Account a WHERE a.allocatedDate IS NULL"),
-		@NamedQuery(name = Account.OLD, query = "SELECT a FROM Account a WHERE a.allocatedDate < :date"),
-		@NamedQuery(name = Account.USERS, query = "SELECT COUNT(a) FROM Account a WHERE a.host = :host") })
-public class Account {
+		@NamedQuery(name = R92Account.TODELETE, query = "SELECT a FROM R92Account a WHERE a.allocatedDate IS NULL"),
+		@NamedQuery(name = R92Account.OLD, query = "SELECT a FROM R92Account a WHERE a.allocatedDate < :date"),
+		@NamedQuery(name = R92Account.USERS, query = "SELECT COUNT(a) FROM R92Account a WHERE a.host = :host") })
+public class R92Account {
 
-	public static final String TODELETE = "Account.TODELETE"; // Accounts which might be deleted
-	public static final String OLD = "Account.OLD"; // Expired accounts
-	public static final String USERS = "Account.USERS"; // Count of users on host
+	public static final String TODELETE = "R92Account.TODELETE"; // Accounts which might be deleted
+	public static final String OLD = "R92Account.OLD"; // Expired accounts
+	public static final String USERS = "R92Account.USERS"; // Count of users on host
 
 	@Id
 	@GeneratedValue
-	private Long id;
+	private long id;
 
 	private String host;
 
@@ -37,7 +37,7 @@ public class Account {
 	private Date allocatedDate;
 
 	// Needed for JPA
-	public Account() {
+	public R92Account() {
 	}
 
 	public String getHost() {

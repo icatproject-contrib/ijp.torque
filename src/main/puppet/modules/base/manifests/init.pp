@@ -3,8 +3,6 @@
 #
 class base {
   include usergen
-  include glassfish::client
-  include jdk
 
   file { "/etc/adduser.conf":
     source => "puppet:///modules/base/etc/adduser.conf",
@@ -123,8 +121,9 @@ class base {
   package { "python-suds": ensure => present, }
 
   # Hack suds
-  file { "/usr/share/pyshared/suds/cache.py": source => "puppet:///modules/base/cache.py", }
-
+  #file { "/usr/share/pyshared/suds/cache.py": source => "puppet:///modules/base/cache.py", }
+  file { "/usr/lib/python2.7/dist-packages/suds/cache.py": source => "puppet:///modules/base/cache.py", }
+  
   package { "ntp": ensure => present, }
 
   service { "ntp":
@@ -135,22 +134,6 @@ class base {
   package { "deja-dup": ensure => absent, }
 
   file { "/etc/xdg/autostart/deja-dup-monitor.desktop": ensure => absent, }
-
-  $deploy = "/home/dmf/bin/deploy"
-
-  file { ["/home/dmf/install", "/home/dmf/install/config", "/home/dmf/install/distro", "/home/dmf/install/unpack"]:
-    ensure  => directory,
-    owner   => dmf,
-    group   => dmf,
-    require => User["dmf"],
-  }
-
-  file { "/home/dmf/bin/deploy":
-    source => "puppet:///modules/glassfish/bin/deploy",
-    owner  => dmf,
-    group  => dmf,
-    mode   => 0700,
-  }
 
   group { "octopus":
     ensure => "present",
@@ -165,7 +148,7 @@ class base {
 
   file { "/etc/nfs.credentials":
     ensure => "file",
-    source => "puppet:///modules/worker_lsf/nfs.credentials",
+    source => "puppet:///modules/worker/nfs.credentials",
     mode   => "0400",
     owner  => "root",
     group  => "root",

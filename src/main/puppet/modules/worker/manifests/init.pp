@@ -105,7 +105,7 @@ class worker {
   }
 
   file { "/opt/ijp/bin":
-    source  => "puppet:///modules/worker_lsf/opt/ijp/bin",
+    source  => "puppet:///modules/worker/opt/ijp/bin",
     recurse => true,
     purge   => false,
     mode    => "0755"

@@ -10,3 +10,9 @@ prepareaccount = /home/fisher/bin/prepareaccount
 passwordDurationSeconds = 120
 poolPrefix = pool
 reader = db username root password password
+
+families.list = batch ingest   
+families.batch.members =  batch01     batch02 batch03    
+families.ingest.members = ingest01 ingest02
+families.batch.puppet = user { "%s": ensure => present, managehome => true, shell => "/bin/bash", }
+families.ingest.puppet = user { "%s": ensure => present, managehome => true, shell => "/bin/bash", groups => [octopus], require => Common_account[dmf], }

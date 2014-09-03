@@ -1,7 +1,10 @@
 #!/bin/sh
 set -e
 
+release=$(lsb_release -cs)
+echo "Using ubuntu codenamed $release"
 [ -d puppet/modules ] || ( echo "No puppet/modules directory"; exit 1 )
+export http_proxy=http://wwwcache.rl.ac.uk:8080 
 
 fqdn=$(hostname -f)
 
@@ -17,11 +20,12 @@ ff02::2 ip6-allrouters
 EOF
 
 # Get repos complete
-echo "Do apt-get update and add the puppetlabs repo..."
+echo "Do apt-get update."
 apt-get -qq update
-wget http://apt.puppetlabs.com/puppetlabs-release-precise.deb 
-dpkg -i puppetlabs-release-precise.deb
-rm -f puppetlabs-release-precise.deb
+echo "Get the puppet repo"
+wget http://apt.puppetlabs.com/puppetlabs-release-${release}.deb 
+dpkg -i puppetlabs-release-${release}.deb
+rm -f puppetlabs-release-${release}.deb
 apt-get -qq update
 
 # Postgresql for puppetdb

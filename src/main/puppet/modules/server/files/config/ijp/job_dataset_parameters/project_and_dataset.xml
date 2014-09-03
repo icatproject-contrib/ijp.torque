@@ -1,8 +1,0 @@
-<jobDatasetType>
-    <datasetTypes>project</datasetTypes>
-    <datasetTypes>dataset</datasetTypes>
-    <jobDatasetParameter>
-        <name>numChannels</name>
-        <query>DatasetParameter.numericValue &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; DatasetParameter [type.name='nchannels']</query>
-    </jobDatasetParameter>
-</jobDatasetType>

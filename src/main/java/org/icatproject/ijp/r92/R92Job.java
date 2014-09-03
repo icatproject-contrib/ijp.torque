@@ -13,12 +13,12 @@ import javax.persistence.TemporalType;
 @SuppressWarnings("serial")
 @Entity
 @NamedQueries({
-		@NamedQuery(name = "Job.FIND_BY_USERNAME", query = "SELECT j FROM Job j WHERE j.username = :username ORDER BY j.submitDate DESC"),
-		@NamedQuery(name = "Job.FIND_INCOMPLETE", query = "SELECT j FROM Job j WHERE j.status != 'C'") })
-public class Job implements Serializable {
+		@NamedQuery(name = "R92Job.FIND_BY_USERNAME", query = "SELECT j FROM R92Job j WHERE j.username = :username ORDER BY j.submitDate DESC"),
+		@NamedQuery(name = "R92Job.FIND_INCOMPLETE", query = "SELECT j FROM R92Job j WHERE j.status != 'C'") })
+public class R92Job implements Serializable {
 
-	public final static String FIND_BY_USERNAME = "Job.FIND_BY_USERNAME";
-	public final static String FIND_INCOMPLETE = "Job.FIND_INCOMPLETE";
+	public final static String FIND_BY_USERNAME = "R92Job.FIND_BY_USERNAME";
+	public final static String FIND_INCOMPLETE = "R92Job.FIND_INCOMPLETE";
 
 	@Id
 	private String id;
@@ -48,7 +48,7 @@ public class Job implements Serializable {
 		return comment;
 	}
 
-	public Job() {
+	public R92Job() {
 	}
 
 	public String getId() {

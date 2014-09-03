@@ -6,28 +6,6 @@ either directly or using sudo from another account. Choose one machine as the se
 have enough disk space to run the ICAT Data Server. All other machines (referred to as worker nodes) 
 require little disk space.
 
-Logon on to any machine where you can check out (or export) the svn puppet module which contains this 
-README.txt, cd into it and run package.sh. This will create three tar.gz files which are needed in the 
-next step.
-
-Logon to the chosen server machine as root and set up a /root/downloads directory with the following. 
-The versions may be more recent.
- 
-   ijp-utils-1.0.0.tar.gz
-   jdk-7u9-linux-x64.tar.gz - this is jdk 7 64bit - google for: jdk 7 oracle
-   glassfish-4.0.zip - this is glassfish - google for: glassfish
-   mysql-connector-java-5.1.21-bin.jar - mysql jdbc connector
-   puppet-config-1.0.0.tar.gz
-   puppetlabs-release-precise.deb - see http://docs.puppetlabs.com/guides/installation.html#debian-and-ubuntu
-   puppet-puppet-1.0.0.tar.gz
-   puppet-scripts-1.0.0.tar.gz
-   python-ijp-1.0.0.tar.gz
-     
-In case you need to start again it is worth keeping a copy of the downloads directory elsewhere then it
-will be quick to restore it.
-
-All other machines should have a /root/downloads directory but it need only contain puppet-scripts-1.0.0.tar.gz
-
 Puppet is used to do most of the work. This runs every half an hour and tries to bring each machine 
 into the correct state. You can initiate a run by "puppet agent -t" on the machine which you 
 want updating. This also applies to the server machine which contacts itself to do updates - that is 
@@ -41,7 +19,7 @@ so that it will not run while it is in one of its half hourly runs.
 Networking
 ----------
 
-You should ensure that on all machines the command "hostname" works and gives the fqdn. If not try making 
+You should ensure that on all machines the command "hostname -f" works and gives the fqdn. If not try making 
 /etc/resolv.conf a file rather than a link with:
 
 domain esc.rl.ac.uk
@@ -58,9 +36,9 @@ On master
 
 Unpack the distro and cd to it
 
+apt-get install unzip
 ntpdate time.rl.ac.uk
-export PATH=$PATH:$(pwd)/puppet/scripts
-setup-master.sh
+puppet/scripts/setup-master.sh
 
 If you make a mistake entering passwords you can run the setup-master.sh script again. Passwords will 
 not be reset.
@@ -81,9 +59,9 @@ On all other machines
 
 unpack the distro and cd to it
 
+apt-get install unzip
 ntpdate time.rl.ac.uk
-export PATH=$PATH:$(pwd)/puppet/scripts
-setup-agent.sh <full server name>
+puppet/scripts/setup-agent.sh <full server name>
 
 Then go to server and: 
 

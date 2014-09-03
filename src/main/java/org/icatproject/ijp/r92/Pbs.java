@@ -53,7 +53,6 @@ public class Pbs {
 				state = null;
 				job = null;
 			}
-
 		}
 
 		@Override

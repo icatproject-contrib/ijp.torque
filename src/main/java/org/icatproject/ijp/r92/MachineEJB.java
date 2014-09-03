@@ -3,7 +3,6 @@ package org.icatproject.ijp.r92;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.rmi.ServerException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -22,7 +21,6 @@ import javax.persistence.PersistenceContext;
 
 import org.icatproject.ICAT;
 import org.icatproject.IcatException_Exception;
-
 import org.icatproject.ijp.r92.exceptions.InternalException;
 import org.icatproject.utils.CheckedProperties;
 import org.icatproject.utils.CheckedProperties.CheckedPropertyException;
@@ -75,7 +73,7 @@ public class MachineEJB {
 	private final static Random random = new Random();
 	private final static String chars = "abcdefghijkmnpqrstuvwxyz23456789";
 
-	private Account getAccount(String lightest, String sessionId, String jobName,
+	private R92Account getAccount(String lightest, String sessionId, String jobName,
 			List<String> parameters, File script) throws InternalException {
 		String userName;
 		try {
@@ -86,7 +84,7 @@ public class MachineEJB {
 		logger.debug("Set up account for " + userName + " on " + lightest);
 
 		logger.debug("Need to create a new pool account");
-		Account account = new Account();
+		R92Account account = new R92Account();
 		account.setHost(lightest);
 		entityManager.persist(account);
 		char[] pw = new char[4];
@@ -125,9 +123,10 @@ public class MachineEJB {
 		try {
 			/* First find old accounts and remove their password */
 			Date passwordTime = new Date(System.currentTimeMillis() - passwordDurationMillis);
-			List<Account> accounts = entityManager.createNamedQuery(Account.OLD, Account.class)
+			List<R92Account> accounts = entityManager
+					.createNamedQuery(R92Account.OLD, R92Account.class)
 					.setParameter("date", passwordTime).getResultList();
-			for (Account account : accounts) {
+			for (R92Account account : accounts) {
 				entityManager.refresh(account, LockModeType.PESSIMISTIC_WRITE);
 				logger.debug("Delete password for account " + account.getId() + " on "
 						+ account.getHost());
@@ -141,10 +140,10 @@ public class MachineEJB {
 			}
 
 			/* Now delete any accounts which have no processes running */
-			accounts = entityManager.createNamedQuery(Account.TODELETE, Account.class)
+			accounts = entityManager.createNamedQuery(R92Account.TODELETE, R92Account.class)
 					.getResultList();
 			boolean deleted = false;
-			for (Account account : accounts) {
+			for (R92Account account : accounts) {
 				ShellCommand sc = new ShellCommand("ssh", account.getHost(), "ps", "-F",
 						"--noheaders", "-U", poolPrefix + account.getId());
 				if (sc.getExitValue() == 1
@@ -194,7 +193,7 @@ public class MachineEJB {
 					}
 					if (!online) {
 						String hostName = pair.getKey();
-						long count = entityManager.createNamedQuery(Account.USERS, Long.class)
+						long count = entityManager.createNamedQuery(R92Account.USERS, Long.class)
 								.setParameter("host", hostName).getSingleResult();
 						if (count == 0L) {
 							logger.debug("Idle machine " + hostName + " has no users");
@@ -215,7 +214,7 @@ public class MachineEJB {
 		}
 	}
 
-	public Account prepareMachine(String sessionId, String jobName, List<String> parameters,
+	public R92Account prepareMachine(String sessionId, String jobName, List<String> parameters,
 			File script) throws InternalException {
 		Set<String> machines = new HashSet<String>();
 		Map<String, Float> loads = loadFinder.getLoads();

@@ -23,17 +23,13 @@ public class Icat {
 		if (instance == null) {
 			try {
 				CheckedProperties portalProps = new CheckedProperties();
-
 				portalProps.loadFromFile(Constants.PROPERTIES_FILEPATH);
-
 				if (portalProps.has("javax.net.ssl.trustStore")) {
 					System.setProperty("javax.net.ssl.trustStore",
 							portalProps.getProperty("javax.net.ssl.trustStore"));
 				}
 				URL icatUrl = portalProps.getURL("icat.url");
-
 				icatUrl = new URL(icatUrl, "ICATService/ICAT?wsdl");
-
 				QName qName = new QName("http://icatproject.org", "ICATService");
 				ICATService service = new ICATService(icatUrl, qName);
 				instance = service.getICATPort();

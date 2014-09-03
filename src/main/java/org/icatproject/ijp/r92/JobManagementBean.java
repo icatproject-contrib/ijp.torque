@@ -3,6 +3,7 @@ package org.icatproject.ijp.r92;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,8 @@ import java.io.StringReader;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +25,14 @@ import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Schedule;
 import javax.ejb.Stateless;
+import javax.json.Json;
+import javax.json.stream.JsonGenerator;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
@@ -36,6 +42,7 @@ import org.icatproject.ijp.r92.exceptions.ForbiddenException;
 import org.icatproject.ijp.r92.exceptions.InternalException;
 import org.icatproject.ijp.r92.exceptions.ParameterException;
 import org.icatproject.ijp.r92.exceptions.SessionException;
+import org.icatproject.utils.CheckedProperties;
 import org.icatproject.utils.ShellCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,46 +75,63 @@ public class JobManagementBean {
 	private MachineEJB machineEJB;
 
 	private String defaultFamily;
-	private Map<String, LocalFamily> families = new HashMap<String, LocalFamily>();
+
 	private Unmarshaller qstatUnmarshaller;
+
+	private Path jobOutputDir;
+
+	private Map<String, List<String>> families = new HashMap<>();
 
 	@PostConstruct
 	void init() {
 
-		// try {
-		// XmlFileManager xmlFileManager = new XmlFileManager();
-		// jobTypes = xmlFileManager.getJobTypeMappings().getJobTypesMap();
-		// logger.debug("Initialised JobManager");
-		// } catch (Exception e) {
-		// String msg = e.getClass().getName() + " reports " + e.getMessage();
-		// logger.error(msg);
-		// throw new RuntimeException(msg);
+		try (PrintStream p = new PrintStream(Constants.USERGEN)) {
+			CheckedProperties props = new CheckedProperties();
+			props.loadFromFile(Constants.PROPERTIES_FILEPATH);
 
-		// icat = Icat.getIcat();
-		//
-		// Unmarshaller um = JAXBContext.newInstance(Families.class).createUnmarshaller();
-		// Families fams = (Families) um.unmarshal(new FileReader(Constants.CONFIG_SUBDIR
-		// + "/families.xml"));
-		// PrintStream p = new PrintStream("/etc/puppet/modules/usergen/manifests/init.pp");
-		// p.print(fams.getPuppet());
-		// p.close();
-		// defaultFamily = fams.getDefault();
-		// for (Families.Family fam : fams.getFamily()) {
-		// LocalFamily lf = new LocalFamily(fam.getCount(), fam.getRE());
-		// families.put(fam.getName(), lf);
-		// }
-		//
-		// qstatUnmarshaller = JAXBContext.newInstance(Qstat.class).createUnmarshaller();
-		//
-		// XmlFileManager xmlFileManager = new XmlFileManager();
-		// jobTypes = xmlFileManager.getJobTypeMappings().getJobTypesMap();
-		//
-		// logger.debug("Initialised JobManagementBean");
-		// } catch (Exception e) {
-		// String msg = e.getClass().getName() + " reports " + e.getMessage();
-		// logger.error(msg);
-		// throw new RuntimeException(msg);
-		// }
+			String familiesList = props.getString("families.list");
+			p.println("class usergen {");
+			for (String mnemonic : familiesList.split("\\s+")) {
+				if (defaultFamily == null) {
+					defaultFamily = mnemonic;
+				}
+				String key = "families." + mnemonic + ".members";
+				String[] members = props.getString(key).split("\\s+");
+				families.put(mnemonic, new ArrayList<>(Arrays.asList(members)));
+				logger.debug("Family " + mnemonic + " contains " + families.get(mnemonic));
+				String format = props.getString("families." + mnemonic + ".puppet");
+				for (String member : families.get(mnemonic)) {
+					p.format(format, member);
+					p.println();
+				}
+			}
+			if (defaultFamily == null) {
+				String msg = "No families defined";
+				logger.error(msg);
+				throw new IllegalStateException(msg);
+			}
+
+			p.println('}');
+
+			// jobOutputDir = props.getPath("jobOutputDir"); TODO
+			// if (!jobOutputDir.toFile().exists()) {
+			// String msg = "jobOutputDir " + jobOutputDir + "does not exist";
+			// logger.error(msg);
+			// throw new IllegalStateException(msg);
+			// }
+			// jobOutputDir = jobOutputDir.toAbsolutePath();
+
+			qstatUnmarshaller = JAXBContext.newInstance(Qstat.class).createUnmarshaller();
+
+			logger.debug("Initialised JobManagementBean");
+
+			logger.info("Set up R92 with default family " + defaultFamily);
+		} catch (Exception e) {
+			String msg = e.getClass() + " reports " + e.getMessage();
+			logger.error(msg);
+			throw new IllegalStateException(msg);
+		}
+
 	}
 
 	private final static Logger logger = LoggerFactory.getLogger(JobManagementBean.class);
@@ -117,15 +141,15 @@ public class JobManagementBean {
 	@PersistenceContext(unitName = "r92")
 	private EntityManager entityManager;
 
-	public List<Job> getJobsForUser(String sessionId) throws SessionException {
+	public List<R92Job> getJobsForUser(String sessionId) throws SessionException {
 		String username = getUserName(sessionId);
-		return entityManager.createNamedQuery(Job.FIND_BY_USERNAME, Job.class)
+		return entityManager.createNamedQuery(R92Job.FIND_BY_USERNAME, R92Job.class)
 				.setParameter("username", username).getResultList();
 	}
 
 	public InputStream getJobOutput(String sessionId, String jobId, OutputType outputType)
 			throws SessionException, ForbiddenException, InternalException {
-		Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(sessionId, jobId);
 		String ext = "." + (outputType == OutputType.STANDARD_OUTPUT ? "o" : "e")
 				+ jobId.split("\\.")[0];
 		Path path = FileSystems.getDefault().getPath("/home/batch/jobs",
@@ -163,8 +187,8 @@ public class JobManagementBean {
 			String jobsXml = sc.getStdout().trim();
 			if (jobsXml.isEmpty()) {
 				/* See if any jobs have completed without being noticed */
-				for (Job job : entityManager.createNamedQuery(Job.FIND_INCOMPLETE, Job.class)
-						.getResultList()) {
+				for (R92Job job : entityManager.createNamedQuery(R92Job.FIND_INCOMPLETE,
+						R92Job.class).getResultList()) {
 					logger.warn("Updating status of job '" + job.getId() + "' from '"
 							+ job.getStatus() + "' to 'C' as not known to qstat");
 					job.setStatus("C");
@@ -180,7 +204,7 @@ public class JobManagementBean {
 				String workerNode = wn != null ? wn.split("/")[0] : "";
 				String comment = xjob.getComment() == null ? "" : xjob.getComment();
 
-				Job job = entityManager.find(Job.class, id);
+				R92Job job = entityManager.find(R92Job.class, id);
 				if (job != null) {/* Log updates on portal jobs */
 					if (!job.getStatus().equals(xjob.getStatus())) {
 						logger.debug("Updating status of job '" + id + "' from '" + job.getStatus()
@@ -259,7 +283,7 @@ public class JobManagementBean {
 		for (Qstat.Job xjob : qstat.getJobs()) {
 			String id = xjob.getJobId();
 			if (id.equals(jobId)) {
-				Job job = new Job();
+				R92Job job = new R92Job();
 				job.setId(jobId);
 				job.setStatus(xjob.getStatus());
 				job.setComment(xjob.getComment());
@@ -342,7 +366,7 @@ public class JobManagementBean {
 		}
 		File interactiveScriptFile = p.toFile();
 		createScript(interactiveScriptFile, parameters, executable);
-		Account account = machineEJB.prepareMachine(sessionId, executable, parameters,
+		R92Account account = machineEJB.prepareMachine(sessionId, executable, parameters,
 				interactiveScriptFile);
 		return account.getUserName() + " " + account.getPassword() + " " + account.getHost();
 	}
@@ -358,19 +382,19 @@ public class JobManagementBean {
 	}
 
 	public String listStatus(String sessionId) throws SessionException {
-		 String username = getUserName(sessionId);
-		 List<Job> jobs = entityManager.createNamedQuery(Job.FIND_BY_USERNAME, Job.class)
-		 .setParameter("username", username).getResultList();
-		 StringBuilder sb = new StringBuilder();
-		 for (Job job : jobs) {
-		 sb.append(job.getId() + ", " + job.getStatus() + "\n");
-		 }
-		 return sb.toString();
+		String username = getUserName(sessionId);
+		List<R92Job> jobs = entityManager.createNamedQuery(R92Job.FIND_BY_USERNAME, R92Job.class)
+				.setParameter("username", username).getResultList();
+		StringBuilder sb = new StringBuilder();
+		for (R92Job job : jobs) {
+			sb.append(job.getId() + ", " + job.getStatus() + "\n");
+		}
+		return sb.toString();
 	}
 
 	public String getStatus(String jobId, String sessionId) throws SessionException,
 			ForbiddenException {
-		Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(sessionId, jobId);
 		StringBuilder sb = new StringBuilder();
 		sb.append("Id:                 " + job.getId() + "\n");
 		sb.append("Status:             " + job.getStatus() + "\n");
@@ -380,10 +404,11 @@ public class JobManagementBean {
 		return sb.toString();
 	}
 
-	private Job getJob(String sessionId, String jobId) throws SessionException, ForbiddenException {
+	private R92Job getJob(String sessionId, String jobId) throws SessionException,
+			ForbiddenException {
 		checkCredentials(sessionId);
 		String username = getUserName(sessionId);
-		Job job = entityManager.find(Job.class, jobId);
+		R92Job job = entityManager.find(R92Job.class, jobId);
 		if (job == null || !job.getUsername().equals(username)) {
 			throw new ForbiddenException("Job does not belong to you");
 		}
@@ -393,7 +418,7 @@ public class JobManagementBean {
 	public void delete(String sessionId, String jobId) throws SessionException, ForbiddenException,
 			InternalException, ParameterException {
 		checkCredentials(sessionId);
-		Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(sessionId, jobId);
 		if (!job.getStatus().equals("C")) {
 			throw new ParameterException(
 					"Only completed jobs can be deleted - try cancelling first");
@@ -414,7 +439,7 @@ public class JobManagementBean {
 	public void cancel(String sessionId, String jobId) throws SessionException, ForbiddenException,
 			InternalException {
 		checkCredentials(sessionId);
-		Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(sessionId, jobId);
 		ShellCommand sc = new ShellCommand("qdel", job.getId());
 		if (sc.isError()) {
 			throw new InternalException("Unable to cancel job " + sc.getStderr());
@@ -437,6 +462,35 @@ public class JobManagementBean {
 		} else {
 			return submitBatch(sessionId, executable, parameters, family);
 		}
+	}
+
+	public String estimate(String sessionId, String executable, List<String> parameters,
+			String family, boolean interactive) throws SessionException, ParameterException {
+		logger.info("estimate called with sessionId:" + sessionId + " executable:" + executable
+				+ " parameters:" + parameters + " family:" + family + " :" + " interactive:"
+				+ interactive);
+		String userName = getUserName(sessionId);
+
+		int time;
+		if (interactive) {
+			time = estimateInteractive(userName, executable, parameters, family);
+		} else {
+			time = estimateBatch(userName, executable, parameters, family);
+		}
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		JsonGenerator gen = Json.createGenerator(baos);
+		gen.writeStartObject().write("time", time).writeEnd().close();
+		return baos.toString();
+	}
+
+	private int estimateBatch(String userName, String executable, List<String> parameters,
+			String family) {
+		return 0;
+	}
+
+	private int estimateInteractive(String userName, String executable, List<String> parameters,
+			String family) throws SessionException, ParameterException {
+		throw new ParameterException("Interactive jobs are not currently supported by UnixBatch");
 	}
 
 }
