@@ -16,11 +16,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
-import org.icatproject.ijp.r92.JobManagementBean.OutputType;
-import org.icatproject.ijp.r92.exceptions.ForbiddenException;
-import org.icatproject.ijp.r92.exceptions.InternalException;
-import org.icatproject.ijp.r92.exceptions.ParameterException;
-import org.icatproject.ijp.r92.exceptions.SessionException;
+import org.icatproject.ijp.batch.OutputType;
+import org.icatproject.ijp.batch.exceptions.ForbiddenException;
+import org.icatproject.ijp.batch.exceptions.InternalException;
+import org.icatproject.ijp.batch.exceptions.ParameterException;
+import org.icatproject.ijp.batch.exceptions.SessionException;
 
 @Stateless
 @Path("")
@@ -144,7 +144,7 @@ public class JobManager {
 	}
 
 	@GET
-	@Path("status")
+	@Path("list")
 	@Produces(MediaType.APPLICATION_JSON)
 	/**
 	 * Get the list of statuses of known jobs that may be queried by the user identified by the sessionId
@@ -157,9 +157,9 @@ public class JobManager {
 	 * @throws ParameterException
 	 * @throws InternalException
 	 */
-	public String getStatus(@QueryParam("sessionId") String sessionId) throws SessionException,
+	public String list(@QueryParam("sessionId") String sessionId) throws SessionException,
 			ParameterException, InternalException {
-		return jobManagementBean.listStatus(sessionId);
+		return jobManagementBean.list(sessionId);
 	}
 
 	@GET

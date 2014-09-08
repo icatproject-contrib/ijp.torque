@@ -1,8 +1,8 @@
 package org.icatproject.ijp.r92;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -19,9 +19,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 
-import org.icatproject.ICAT;
-import org.icatproject.IcatException_Exception;
-import org.icatproject.ijp.r92.exceptions.InternalException;
+import org.icatproject.ijp.batch.exceptions.InternalException;
 import org.icatproject.utils.CheckedProperties;
 import org.icatproject.utils.CheckedProperties.CheckedPropertyException;
 import org.icatproject.utils.ShellCommand;
@@ -39,8 +37,6 @@ public class MachineEJB {
 
 	private LoadFinder loadFinder;
 
-	private ICAT icat;
-
 	@PostConstruct
 	private void init() {
 		CheckedProperties props = new CheckedProperties();
@@ -57,7 +53,6 @@ public class MachineEJB {
 			pbs = new Pbs();
 			loadFinder = new LoadFinder();
 			pbs = new Pbs();
-			icat = Icat.getIcat();
 		} catch (InternalException e) {
 			throw new RuntimeException("ServerException " + e.getMessage());
 		}
@@ -73,15 +68,9 @@ public class MachineEJB {
 	private final static Random random = new Random();
 	private final static String chars = "abcdefghijkmnpqrstuvwxyz23456789";
 
-	private R92Account getAccount(String lightest, String sessionId, String jobName,
-			List<String> parameters, File script) throws InternalException {
-		String userName;
-		try {
-			userName = icat.getUserName(sessionId);
-		} catch (IcatException_Exception e) {
-			throw new InternalException(e.getMessage());
-		}
-		logger.debug("Set up account for " + userName + " on " + lightest);
+	private R92Account getAccount(String lightest, String username, String jobName,
+			List<String> parameters, Path script) throws InternalException {
+		logger.debug("Set up account for " + username + " on " + lightest);
 
 		logger.debug("Need to create a new pool account");
 		R92Account account = new R92Account();
@@ -95,8 +84,8 @@ public class MachineEJB {
 
 		Long id = account.getId();
 
-		ShellCommand sc = new ShellCommand("scp", script.getAbsolutePath(), "dmf@" + lightest + ":"
-				+ id + ".sh");
+		ShellCommand sc = new ShellCommand("scp", script.toAbsolutePath().toString(), "dmf@"
+				+ lightest + ":" + id + ".sh");
 		if (sc.isError()) {
 			throw new InternalException(sc.getMessage());
 		}
@@ -110,7 +99,7 @@ public class MachineEJB {
 		if (!sc.getStdout().isEmpty()) {
 			logger.debug("Prepare account reports " + sc.getStdout());
 		}
-		account.setUserName(userName);
+		account.setUserName(username);
 		account.setAllocatedDate(new Date());
 
 		account.setPassword(password);
@@ -214,8 +203,8 @@ public class MachineEJB {
 		}
 	}
 
-	public R92Account prepareMachine(String sessionId, String jobName, List<String> parameters,
-			File script) throws InternalException {
+	public R92Account prepareMachine(String username, String jobName, List<String> parameters,
+			Path script) throws InternalException {
 		Set<String> machines = new HashSet<String>();
 		Map<String, Float> loads = loadFinder.getLoads();
 		Map<String, String> avail = pbs.getStates();
@@ -247,7 +236,7 @@ public class MachineEJB {
 		}
 
 		pbs.setOffline(lightest);
-		return getAccount(lightest, sessionId, jobName, parameters, script);
+		return getAccount(lightest, username, jobName, parameters, script);
 
 	}
 

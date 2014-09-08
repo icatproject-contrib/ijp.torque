@@ -1,7 +1,7 @@
 Setting up the ICAT Job Portal with Puppet
 ==========================================
 
-All machines should have Ubuntu 12.04 (Precise Pangolin) installed and you must have ssh root access 
+All machines should have Ubuntu 12.04 or 14.04 installed and you must have ssh root access 
 either directly or using sudo from another account. Choose one machine as the server - this should 
 have enough disk space to run the ICAT Data Server. All other machines (referred to as worker nodes) 
 require little disk space.

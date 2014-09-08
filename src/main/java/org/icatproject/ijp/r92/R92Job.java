@@ -14,11 +14,13 @@ import javax.persistence.TemporalType;
 @Entity
 @NamedQueries({
 		@NamedQuery(name = "R92Job.FIND_BY_USERNAME", query = "SELECT j FROM R92Job j WHERE j.username = :username ORDER BY j.submitDate DESC"),
+		@NamedQuery(name = "R92Job.ID_BY_USERNAME", query = "SELECT j.id FROM R92Job j WHERE j.username = :username ORDER BY j.submitDate DESC"),
 		@NamedQuery(name = "R92Job.FIND_INCOMPLETE", query = "SELECT j FROM R92Job j WHERE j.status != 'C'") })
 public class R92Job implements Serializable {
 
 	public final static String FIND_BY_USERNAME = "R92Job.FIND_BY_USERNAME";
 	public final static String FIND_INCOMPLETE = "R92Job.FIND_INCOMPLETE";
+	public static final String ID_BY_USERNAME = "R92Job.ID_BY_USERNAME";;
 
 	@Id
 	private String id;
@@ -30,23 +32,15 @@ public class R92Job implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date submitDate;
 
-	private long icatJobId;
-
 	private String batchFilename;
 
-	private String workerNode;
-
-	private String comment;
-
-	public String getBatchUsername() {
-		return batchUsername;
+	public String getExecutable() {
+		return executable;
 	}
 
+	private String executable;
 	private String batchUsername;
-
-	public String getComment() {
-		return comment;
-	}
+	private String workerNode;
 
 	public R92Job() {
 	}
@@ -83,14 +77,6 @@ public class R92Job implements Serializable {
 		this.submitDate = submitDate;
 	}
 
-	public long getIcatJobId() {
-		return icatJobId;
-	}
-
-	public void setIcatJobId(long icatJobId) {
-		this.icatJobId = icatJobId;
-	}
-
 	public String getBatchFilename() {
 		return batchFilename;
 	}
@@ -99,19 +85,24 @@ public class R92Job implements Serializable {
 		this.batchFilename = batchFilename;
 	}
 
+	public void setExecutable(String executable) {
+		this.executable = executable;
+	}
+
+	public String getBatchUsername() {
+		return batchUsername;
+	}
+
+	public void setBatchUsername(String batchUsername) {
+		this.batchUsername = batchUsername;
+
+	}
+
 	public String getWorkerNode() {
 		return workerNode;
 	}
 
 	public void setWorkerNode(String workerNode) {
 		this.workerNode = workerNode;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
-	public void setBatchUsername(String batchUsername) {
-		this.batchUsername = batchUsername;
 	}
 }

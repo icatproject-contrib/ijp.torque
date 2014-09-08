@@ -51,38 +51,6 @@ class worker {
     mode    => 644;
   }
 
-  # Store for python distros
-  file { "/root/python-pkgs/":
-    source  => "puppet:///modules/server/python",
-    recurse => true,
-    purge   => true,
-  }
-
-  # Simple python installer
-  file { "/usr/sbin/install_python_packages":
-    source => "puppet:///modules/server/usr/sbin/install_python_packages",
-    mode   => 755,
-  }
-
-  exec { "/usr/sbin/install_python_packages":
-    subscribe   => File["/root/python-pkgs/"],
-    refreshonly => true,
-  }
-
-  file { "ids.client-distro.zip":
-    path    => "/home/dmf/install/distro/ids.client-distro.zip",
-    source  => "puppet:///modules/glassfish/distros/ids.client-1.0.0-distro.zip",
-    owner   => dmf,
-    group   => dmf,
-    require => User["dmf"],
-  }
-
-  exec { "ids.client":
-    command     => "${base::deploy} root ids.client ids.client-distro.zip",
-    subscribe   => File["ids.client-distro.zip"],
-    refreshonly => true,
-  }
-
   class { "apt":
     always_apt_update    => true,
     disable_keys         => undef,

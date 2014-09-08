@@ -5,8 +5,8 @@
     <persistence-unit name="r92" transaction-type="JTA">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <jta-data-source>jdbc/r92</jta-data-source>
-        <class>org.icatproject.ijp.r92.Job</class>
-        <class>org.icatproject.ijp.r92.Account</class>
+        <class>org.icatproject.ijp.r92.R92Job</class>
+        <class>org.icatproject.ijp.r92.R92Account</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="eclipselink.target-server" value="SunAS9" />

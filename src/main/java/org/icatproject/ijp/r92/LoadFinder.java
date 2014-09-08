@@ -9,7 +9,7 @@ import java.util.Map;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.icatproject.ijp.r92.exceptions.InternalException;
+import org.icatproject.ijp.batch.exceptions.InternalException;
 import org.icatproject.utils.CheckedProperties;
 import org.icatproject.utils.CheckedProperties.CheckedPropertyException;
 import org.xml.sax.Attributes;

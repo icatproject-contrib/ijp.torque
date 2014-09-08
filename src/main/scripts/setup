@@ -16,7 +16,7 @@ props = actions.getGlassfish("r92-setup.properties", ["dbProperties", "glassfish
 
 prop_name = "r92.properties"
 prop_list = ["icat.url", "ids.url", "gangliaHost", "pbsnodes", "qsig", "qstat", "qsub", "prepareaccount",
-"passwordDurationSeconds", "poolPrefix", "reader"]
+"passwordDurationSeconds", "poolPrefix"]
 
 if arg in ["CONFIGURE", "INSTALL"]:
     actions.configure(prop_name, prop_list) 

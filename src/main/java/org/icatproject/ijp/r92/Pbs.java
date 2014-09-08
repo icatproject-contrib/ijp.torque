@@ -10,7 +10,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.icatproject.ijp.r92.exceptions.InternalException;
+import org.icatproject.ijp.batch.exceptions.InternalException;
 import org.icatproject.utils.CheckedProperties;
 import org.icatproject.utils.CheckedProperties.CheckedPropertyException;
 import org.icatproject.utils.ShellCommand;

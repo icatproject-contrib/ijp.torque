@@ -9,19 +9,6 @@ class server {
   include ganglia::reporter
   include apache2
   include jdk
- 
-  exec {"tar zxf /root/downloads/ijp-utils-1.0.0.tar.gz main/python/ijp --to-command cat > /usr/local/bin/ijp && chmod 775 /usr/local/bin/ijp":
-  	creates => "/usr/local/bin/ijp",
-  	path => ["/bin"],
-  }
-  
-  file {"/etc/puppet/modules/server/files/python":
-  	ensure => directory,
-  }
-  
-  file {"/etc/puppet/modules/server/files/python/python-ijp-1.0.0.tar.gz":
-  	source => "/root/downloads/python-ijp-1.0.0.tar.gz",
-  }
   
   file {"/home/dmf/install":
     ensure => "directory",
@@ -104,16 +91,16 @@ class server {
     owner => "dmf",
     group => "dmf",
     require => User["dmf"],
-  }
+  }  
   
-  file {"dmf.portal_submissions":
+  file {"dmf.submissions":
     ensure => directory,
-    path => "/home/dmf/portal_submissions",
+    path => "/home/dmf/submissions",
     owner => "dmf",
     group => "dmf",
     require => User["dmf"],
   }
-
+  
   sudoers_entry{"dmf_on_server":}
 
   file {"/etc/security/limits.conf":
@@ -147,35 +134,5 @@ class server {
     }
 
   } 
-
-  file { "/home/dmf/ingestion":
-    ensure => "directory",
-    owner  => "dmf",
-    group  => "dmf",
-  }
-
-  file { "/home/dmf/ingestion/ingest.py":
-    ensure => "file",
-    source => "puppet:///modules/server/ingest.py",
-    owner  => "dmf",
-    group  => "dmf",
-    mode   => "0770",
-  }
-
-  file { "/home/dmf/ingestion/launcher":
-    ensure => "file",
-    source => "puppet:///modules/server/launcher",
-    owner  => "dmf",
-    group  => "dmf",
-    mode   => "0770",
-  }
-
-  exec { "run_ingest":
-    path     => "/bin",
-    cwd      => "/home/dmf/ingestion",
-    command  => "su dmf -c ./launcher",
-    unless   => "[ -f pidfile ] && ps $(cat pidfile) >> /dev/null",
-    provider => "shell",
-  }
   
 }
