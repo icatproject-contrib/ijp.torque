@@ -344,7 +344,7 @@ public class JobManagementBean {
 			throw new InternalException("Unable to create a temporary file: " + e.getMessage());
 		}
 		createScript(interactiveScriptFile, parameters, executable);
-		return machineEJB.prepareMachine(username, executable, parameters, interactiveScriptFile);
+		return machineEJB.prepareMachine(executable, parameters, interactiveScriptFile);
 	}
 
 	private String getUserName(String sessionId) throws SessionException {
@@ -435,8 +435,8 @@ public class JobManagementBean {
 		String userName = getUserName(sessionId);
 		if (interactive) {
 			R92Account account = submitInteractive(userName, executable, parameters, family);
-			return BatchJson.submitRDP(account.getUserName(), account.getPassword(),
-					account.getHost());
+			return BatchJson.submitRDP(machineEJB.getPoolPrefix() + account.getId(),
+					account.getPassword(), account.getHost());
 		} else {
 			return BatchJson.submitBatch(submitBatch(userName, executable, parameters, family));
 		}

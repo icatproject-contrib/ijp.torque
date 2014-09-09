@@ -147,7 +147,7 @@ public class JobManager {
 	@Path("list")
 	@Produces(MediaType.APPLICATION_JSON)
 	/**
-	 * Get the list of statuses of known jobs that may be queried by the user identified by the sessionId
+	 * Get the list of jobids that may be queried by the user identified by the sessionId
 	 * 
 	 * @param sessionId
 	 * 

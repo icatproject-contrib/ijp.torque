@@ -68,11 +68,10 @@ public class MachineEJB {
 	private final static Random random = new Random();
 	private final static String chars = "abcdefghijkmnpqrstuvwxyz23456789";
 
-	private R92Account getAccount(String lightest, String username, String jobName,
-			List<String> parameters, Path script) throws InternalException {
-		logger.debug("Set up account for " + username + " on " + lightest);
+	private R92Account getAccount(String lightest, String jobName, List<String> parameters,
+			Path script) throws InternalException {
+		logger.debug("Set up a pool account on " + lightest);
 
-		logger.debug("Need to create a new pool account");
 		R92Account account = new R92Account();
 		account.setHost(lightest);
 		entityManager.persist(account);
@@ -99,7 +98,6 @@ public class MachineEJB {
 		if (!sc.getStdout().isEmpty()) {
 			logger.debug("Prepare account reports " + sc.getStdout());
 		}
-		account.setUserName(username);
 		account.setAllocatedDate(new Date());
 
 		account.setPassword(password);
@@ -203,8 +201,8 @@ public class MachineEJB {
 		}
 	}
 
-	public R92Account prepareMachine(String username, String jobName, List<String> parameters,
-			Path script) throws InternalException {
+	public R92Account prepareMachine(String jobName, List<String> parameters, Path script)
+			throws InternalException {
 		Set<String> machines = new HashSet<String>();
 		Map<String, Float> loads = loadFinder.getLoads();
 		Map<String, String> avail = pbs.getStates();
@@ -236,7 +234,7 @@ public class MachineEJB {
 		}
 
 		pbs.setOffline(lightest);
-		return getAccount(lightest, username, jobName, parameters, script);
+		return getAccount(lightest, jobName, parameters, script);
 
 	}
 
