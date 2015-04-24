@@ -72,7 +72,7 @@ public class JobManager {
 	@Produces(MediaType.APPLICATION_JSON)
 	/**
 	 * Return an estimate of the time to complete a batch job or to start an interactive one. 
-	 * The parameters are indentical to those of submit. 
+	 * The parameters are identical to those of submit. 
 	 * 
 	 * @param sessionId the icatSession id of the submitter
 	 * @param executable the executable name
