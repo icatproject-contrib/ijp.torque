@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
@@ -37,6 +38,7 @@ import javax.xml.namespace.QName;
 
 import org.icatproject.ICAT;
 import org.icatproject.ICATService;
+import org.icatproject.IcatExceptionType;
 import org.icatproject.IcatException_Exception;
 import org.icatproject.ijp.batch.BatchJson;
 import org.icatproject.ijp.batch.JobStatus;
@@ -56,7 +58,7 @@ import org.slf4j.LoggerFactory;
 @Stateless
 public class JobManagementBean {
 
-	private ICAT icat;
+	private QName qName = new QName("http://icatproject.org", "ICATService");
 
 	@EJB
 	private MachineEJB machineEJB;
@@ -103,20 +105,14 @@ public class JobManagementBean {
 			CheckedProperties portalProps = new CheckedProperties();
 			portalProps.loadFromFile(Constants.PROPERTIES_FILEPATH);
 			if (portalProps.has("javax.net.ssl.trustStore")) {
-				System.setProperty("javax.net.ssl.trustStore",
-						portalProps.getProperty("javax.net.ssl.trustStore"));
+				System.setProperty("javax.net.ssl.trustStore", portalProps.getProperty("javax.net.ssl.trustStore"));
 			}
-			URL icatUrl = portalProps.getURL("icat.url");
-			icatUrl = new URL(icatUrl, "ICATService/ICAT?wsdl");
-			QName qName = new QName("http://icatproject.org", "ICATService");
-			ICATService service = new ICATService(icatUrl, qName);
-			icat = service.getICATPort();
 
 			statusMapper.put("C", JobStatus.Completed);
-			statusMapper.put("E", JobStatus.Running);
+			statusMapper.put("E", JobStatus.Executing);
 			statusMapper.put("H", JobStatus.Held);
 			statusMapper.put("Q", JobStatus.Queued);
-			statusMapper.put("R", JobStatus.Running);
+			statusMapper.put("R", JobStatus.Executing);
 			statusMapper.put("T", JobStatus.Queued);
 			statusMapper.put("W", JobStatus.Queued);
 			statusMapper.put("S", JobStatus.Held);
@@ -138,30 +134,26 @@ public class JobManagementBean {
 
 	private Map<String, JobStatus> statusMapper = new HashMap<>();
 
-	public List<R92Job> getJobsForUser(String sessionId) throws SessionException {
-		String username = getUserName(sessionId);
-		return entityManager.createNamedQuery(R92Job.FIND_BY_USERNAME, R92Job.class)
-				.setParameter("username", username).getResultList();
+	public List<R92Job> getJobsForUser(String sessionId, String icatUrl) throws SessionException, ParameterException {
+		String username = getUserName(sessionId, icatUrl);
+		return entityManager.createNamedQuery(R92Job.FIND_BY_USERNAME, R92Job.class).setParameter("username", username)
+				.getResultList();
 	}
 
-	public InputStream getJobOutput(String sessionId, String jobId, OutputType outputType)
-			throws SessionException, ForbiddenException, InternalException {
-		logger.info("getJobOutput called with sessionId:" + sessionId + " jobId:" + jobId
-				+ " outputType:" + outputType);
-		R92Job job = getJob(sessionId, jobId);
-		String ext = "." + (outputType == OutputType.STANDARD_OUTPUT ? "o" : "e")
-				+ jobId.split("\\.")[0];
-		Path path = FileSystems.getDefault().getPath("/home/batch/jobs",
-				job.getBatchFilename() + ext);
+	public InputStream getJobOutput(String jobId, OutputType outputType, String sessionId, String icatUrl)
+			throws SessionException, ForbiddenException, InternalException, ParameterException {
+		logger.info("getJobOutput called with sessionId:" + sessionId + " jobId:" + jobId + " outputType:" + outputType);
+		R92Job job = getJob(jobId, sessionId, icatUrl);
+		String ext = "." + (outputType == OutputType.STANDARD_OUTPUT ? "o" : "e") + jobId.split("\\.")[0];
+		Path path = FileSystems.getDefault().getPath("/home/batch/jobs", job.getBatchFilename() + ext);
 		if (!Files.exists(path)) {
 			logger.debug("Getting intermediate output for " + jobId);
-			ShellCommand sc = new ShellCommand("sudo", "-u", "batch", "ssh", job.getWorkerNode(),
-					"sudo", "push_output", job.getBatchUsername(), path.toFile().getName());
+			ShellCommand sc = new ShellCommand("sudo", "-u", "batch", "ssh", job.getWorkerNode(), "sudo",
+					"push_output", job.getBatchUsername(), path.toFile().getName());
 			if (sc.isError()) {
 				throw new InternalException("Temporary? problem getting output " + sc.getStderr());
 			}
-			path = FileSystems.getDefault().getPath("/home/batch/jobs",
-					job.getBatchFilename() + ext + "_tmp");
+			path = FileSystems.getDefault().getPath("/home/batch/jobs", job.getBatchFilename() + ext + "_tmp");
 		}
 		if (Files.exists(path)) {
 			logger.debug("Returning output for " + jobId);
@@ -186,10 +178,9 @@ public class JobManagementBean {
 			String jobsXml = sc.getStdout().trim();
 			if (jobsXml.isEmpty()) {
 				/* See if any jobs have completed without being noticed */
-				for (R92Job job : entityManager.createNamedQuery(R92Job.FIND_INCOMPLETE,
-						R92Job.class).getResultList()) {
-					logger.warn("Updating status of job '" + job.getId() + "' from '"
-							+ job.getStatus() + "' to 'C' as not known to qstat");
+				for (R92Job job : entityManager.createNamedQuery(R92Job.FIND_INCOMPLETE, R92Job.class).getResultList()) {
+					logger.warn("Updating status of job '" + job.getId() + "' from '" + job.getStatus()
+							+ "' to 'C' as not known to qstat");
 					job.setStatus("C");
 				}
 				return;
@@ -205,13 +196,13 @@ public class JobManagementBean {
 				R92Job job = entityManager.find(R92Job.class, id);
 				if (job != null) {
 					if (!job.getStatus().equals(xjob.getStatus())) {
-						logger.debug("Updating status of job '" + id + "' from '" + job.getStatus()
-								+ "' to '" + status + "'");
+						logger.debug("Updating status of job '" + id + "' from '" + job.getStatus() + "' to '" + status
+								+ "'");
 						job.setStatus(status);
 					}
 					if (!job.getWorkerNode().equals(workerNode)) {
-						logger.debug("Updating worker node of job '" + id + "' from '"
-								+ job.getWorkerNode() + "' to '" + workerNode + "'");
+						logger.debug("Updating worker node of job '" + id + "' from '" + job.getWorkerNode() + "' to '"
+								+ workerNode + "'");
 						job.setWorkerNode(workerNode);
 					}
 
@@ -220,13 +211,13 @@ public class JobManagementBean {
 		} catch (Exception e) {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			e.printStackTrace(new PrintStream(baos));
-			logger.error("Update of db jobs from qstat failed. Class " + e.getClass() + " reports "
-					+ e.getMessage() + baos.toString());
+			logger.error("Update of db jobs from qstat failed. Class " + e.getClass() + " reports " + e.getMessage()
+					+ baos.toString());
 		}
 	}
 
-	public String submitBatch(String username, String executable, List<String> parameters,
-			String family) throws ParameterException, InternalException, SessionException {
+	public String submitBatch(String username, String executable, List<String> parameters, String family)
+			throws ParameterException, InternalException, SessionException {
 
 		if (family == null) {
 			family = defaultFamily;
@@ -238,17 +229,16 @@ public class JobManagementBean {
 		String owner = members.get(random.nextInt(members.size()));
 
 		/*
-		 * The batch script needs to be written to disk by the dmf user (running glassfish) before
-		 * it can be submitted via the qsub command as a less privileged batch user. First generate
-		 * a unique name for it.
+		 * The batch script needs to be written to disk by the dmf user (running
+		 * glassfish) before it can be submitted via the qsub command as a less
+		 * privileged batch user. First generate a unique name for it.
 		 */
-		Path batchScriptFile = Paths.get(Constants.DMF_WORKING_DIR_NAME, UUID.randomUUID()
-				.toString());
+		Path batchScriptFile = Paths.get(Constants.DMF_WORKING_DIR_NAME, UUID.randomUUID().toString());
 
 		createScript(batchScriptFile, parameters, executable);
 
-		ShellCommand sc = new ShellCommand("sudo", "-u", owner, "qsub", "-k", "eo", batchScriptFile
-				.toAbsolutePath().toString());
+		ShellCommand sc = new ShellCommand("sudo", "-u", owner, "qsub", "-k", "eo", batchScriptFile.toAbsolutePath()
+				.toString());
 		if (sc.isError()) {
 			throw new InternalException("Unable to submit job via qsub " + sc.getStderr());
 		}
@@ -256,8 +246,8 @@ public class JobManagementBean {
 
 		sc = new ShellCommand("qstat", "-x", jobId);
 		if (sc.isError()) {
-			throw new InternalException("Unable to query just submitted job (id " + jobId
-					+ ") via qstat " + sc.getStderr());
+			throw new InternalException("Unable to query just submitted job (id " + jobId + ") via qstat "
+					+ sc.getStderr());
 		}
 		String jobsXml = sc.getStdout().trim();
 
@@ -265,8 +255,7 @@ public class JobManagementBean {
 		try {
 			qstat = (Qstat) qstatUnmarshaller.unmarshal(new StringReader(jobsXml));
 		} catch (JAXBException e1) {
-			throw new InternalException("Unable to parse qstat output for job (id " + jobId + ") "
-					+ sc.getStderr());
+			throw new InternalException("Unable to parse qstat output for job (id " + jobId + ") " + sc.getStderr());
 		}
 		for (Qstat.Job xjob : qstat.getJobs()) {
 			String id = xjob.getJobId();
@@ -335,8 +324,8 @@ public class JobManagementBean {
 		return sb.toString();
 	}
 
-	public R92Account submitInteractive(String username, String executable,
-			List<String> parameters, String family) throws InternalException {
+	public R92Account submitInteractive(String username, String executable, List<String> parameters, String family)
+			throws InternalException {
 		Path interactiveScriptFile = null;
 		try {
 			interactiveScriptFile = Files.createTempFile(null, null);
@@ -347,28 +336,34 @@ public class JobManagementBean {
 		return machineEJB.prepareMachine(executable, parameters, interactiveScriptFile);
 	}
 
-	private String getUserName(String sessionId) throws SessionException {
+	private String getUserName(String sessionId, String icatUrl) throws ParameterException, SessionException {
 		try {
-			checkCredentials(sessionId);
-			return icat.getUserName(sessionId);
+			checkCredentials(sessionId, icatUrl);
+			ICATService service = new ICATService(new URL(new URL(icatUrl), "ICATService/ICAT?wsdl"), qName);
+			return service.getICATPort().getUserName(sessionId);
 		} catch (IcatException_Exception e) {
-			throw new SessionException("IcatException " + e.getFaultInfo().getType() + " "
-					+ e.getMessage());
+			if (e.getFaultInfo().getType() == IcatExceptionType.SESSION) {
+				throw new SessionException("IcatException " + e.getFaultInfo().getType() + " " + e.getMessage());
+			} else {
+				throw new ParameterException("IcatException " + e.getFaultInfo().getType() + " " + e.getMessage());
+			}
+		} catch (MalformedURLException e) {
+			throw new ParameterException("Bad URL " + e.getMessage());
 		}
 	}
 
-	public String list(String sessionId) throws SessionException {
+	public String list(String sessionId, String icatUrl) throws SessionException, ParameterException {
 		logger.info("list called with sessionId:" + sessionId);
-		String username = getUserName(sessionId);
+		String username = getUserName(sessionId, icatUrl);
 		List<String> jobs = entityManager.createNamedQuery(R92Job.ID_BY_USERNAME, String.class)
 				.setParameter("username", username).getResultList();
 		return BatchJson.list(jobs);
 	}
 
-	public String getStatus(String jobId, String sessionId) throws SessionException,
-			ForbiddenException, InternalException {
+	public String getStatus(String jobId, String sessionId, String icatUrl) throws SessionException,
+			ForbiddenException, InternalException, ParameterException {
 		logger.info("getStatus called with sessionId:" + sessionId + " jobId:" + jobId);
-		R92Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(jobId, sessionId, icatUrl);
 		JobStatus jobStatus = statusMapper.get(job.getStatus());
 		if (jobStatus == null) {
 			throw new InternalException("Status " + job.getStatus() + " is not recognised");
@@ -376,10 +371,9 @@ public class JobManagementBean {
 		return BatchJson.getStatus(jobStatus);
 	}
 
-	private R92Job getJob(String sessionId, String jobId) throws SessionException,
-			ForbiddenException {
-		checkCredentials(sessionId);
-		String username = getUserName(sessionId);
+	private R92Job getJob(String jobId, String sessionId, String icatUrl) throws SessionException, ForbiddenException,
+			ParameterException {
+		String username = getUserName(sessionId, icatUrl);
 		R92Job job = entityManager.find(R92Job.class, jobId);
 		if (job == null || !job.getUsername().equals(username)) {
 			throw new ForbiddenException("Job does not belong to you");
@@ -387,18 +381,16 @@ public class JobManagementBean {
 		return job;
 	}
 
-	public void delete(String sessionId, String jobId) throws SessionException, ForbiddenException,
+	public void delete(String jobId, String sessionId, String icatUrl) throws SessionException, ForbiddenException,
 			InternalException, ParameterException {
 		logger.info("delete called with sessionId:" + sessionId + " jobId:" + jobId);
-		R92Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(jobId, sessionId, icatUrl);
 		if (!job.getStatus().equals("C")) {
-			throw new ParameterException(
-					"Only completed jobs can be deleted - try cancelling first");
+			throw new ParameterException("Only completed jobs can be deleted - try cancelling first");
 		}
 		for (String oe : new String[] { "o", "e" }) {
 			String ext = "." + oe + jobId.split("\\.")[0];
-			Path path = FileSystems.getDefault().getPath("/home/batch/jobs",
-					job.getBatchFilename() + ext);
+			Path path = FileSystems.getDefault().getPath("/home/batch/jobs", job.getBatchFilename() + ext);
 			try {
 				Files.deleteIfExists(path);
 			} catch (IOException e) {
@@ -408,10 +400,10 @@ public class JobManagementBean {
 		entityManager.remove(job);
 	}
 
-	public void cancel(String sessionId, String jobId) throws SessionException, ForbiddenException,
-			InternalException {
+	public void cancel(String jobId, String sessionId, String icatUrl) throws SessionException, ForbiddenException,
+			InternalException, ParameterException {
 		logger.info("cancel called with sessionId:" + sessionId + " jobId:" + jobId);
-		R92Job job = getJob(sessionId, jobId);
+		R92Job job = getJob(jobId, sessionId, icatUrl);
 		ShellCommand sc = new ShellCommand("qdel", job.getId());
 		if (sc.isError()) {
 			throw new InternalException("Unable to cancel job " + sc.getStderr());
@@ -419,52 +411,48 @@ public class JobManagementBean {
 
 	}
 
-	private void checkCredentials(String sessionId) {
+	private void checkCredentials(String sessionId, String icatUrl) throws ParameterException {
 		if (sessionId == null) {
-			throw new WebApplicationException(Response.status(Status.BAD_REQUEST)
-					.entity("No sessionId was specified\n").build());
+			throw new ParameterException("No sessionId was specified");
+		}
+		if (icatUrl == null) {
+			throw new ParameterException("No icatUrl was specified");
 		}
 	}
 
-	public String submit(String sessionId, String executable, List<String> parameters,
-			String family, boolean interactive) throws InternalException, SessionException,
-			ParameterException {
-		logger.info("submit called with sessionId:" + sessionId + " executable:" + executable
-				+ " parameters:" + parameters + " family:" + family + " :" + " interactive:"
-				+ interactive);
-		String userName = getUserName(sessionId);
+	public String submit(String executable, List<String> parameters, String family, boolean interactive,
+			String sessionId, String icatUrl) throws InternalException, SessionException, ParameterException {
+		logger.info("submit called with sessionId:" + sessionId + " executable:" + executable + " parameters:"
+				+ parameters + " family:" + family + " :" + " interactive:" + interactive);
+		String userName = getUserName(sessionId, icatUrl);
 		if (interactive) {
 			R92Account account = submitInteractive(userName, executable, parameters, family);
-			return BatchJson.submitRDP(machineEJB.getPoolPrefix() + account.getId(),
-					account.getPassword(), account.getHost());
+			return BatchJson.submitRDP(machineEJB.getPoolPrefix() + account.getId(), account.getPassword(),
+					account.getHost());
 		} else {
 			return BatchJson.submitBatch(submitBatch(userName, executable, parameters, family));
 		}
 	}
 
-	public String estimate(String sessionId, String executable, List<String> parameters,
-			String family, boolean interactive) throws SessionException, ParameterException {
-		logger.info("estimate called with sessionId:" + sessionId + " executable:" + executable
-				+ " parameters:" + parameters + " family:" + family + " :" + " interactive:"
-				+ interactive);
-		String userName = getUserName(sessionId);
+	public String estimate(String executable, List<String> parameters, String family, boolean interactive,
+			String sessionId, String icatUrl) throws SessionException, ParameterException {
+		logger.info("estimate called with sessionId:" + sessionId + " executable:" + executable + " parameters:"
+				+ parameters + " family:" + family + " :" + " interactive:" + interactive);
+		String userName = getUserName(sessionId, icatUrl);
 
 		if (interactive) {
-			return BatchJson
-					.estimate(estimateInteractive(userName, executable, parameters, family));
+			return BatchJson.estimate(estimateInteractive(userName, executable, parameters, family));
 		} else {
 			return BatchJson.estimate(estimateBatch(userName, executable, parameters, family));
 		}
 	}
 
-	private int estimateBatch(String userName, String executable, List<String> parameters,
-			String family) {
+	private int estimateBatch(String userName, String executable, List<String> parameters, String family) {
 		return 0;
 	}
 
-	private int estimateInteractive(String userName, String executable, List<String> parameters,
-			String family) throws SessionException, ParameterException {
-		throw new ParameterException("Interactive jobs are not currently supported by UnixBatch");
+	private int estimateInteractive(String userName, String executable, List<String> parameters, String family) {
+		return 0;
 	}
 
 }

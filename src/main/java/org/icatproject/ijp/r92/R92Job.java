@@ -15,7 +15,7 @@ import javax.persistence.TemporalType;
 @NamedQueries({
 		@NamedQuery(name = "R92Job.FIND_BY_USERNAME", query = "SELECT j FROM R92Job j WHERE j.username = :username ORDER BY j.submitDate DESC"),
 		@NamedQuery(name = "R92Job.ID_BY_USERNAME", query = "SELECT j.id FROM R92Job j WHERE j.username = :username ORDER BY j.submitDate DESC"),
-		@NamedQuery(name = "R92Job.FIND_INCOMPLETE", query = "SELECT j FROM R92Job j WHERE j.status != 'C'") })
+		@NamedQuery(name = "R92Job.FIND_INCOMPLETE", query = "SELECT j FROM R92Job j WHERE NOT j.status = 'C'") })
 public class R92Job implements Serializable {
 
 	public final static String FIND_BY_USERNAME = "R92Job.FIND_BY_USERNAME";

@@ -140,7 +140,7 @@ class base {
     gid    => "1050",
   }
 
-  file { "/mnt/Octopus": ensure => "directory", }
+  # file { "/mnt/Octopus": ensure => "directory", }
 
   file { "/mnt/OctopusA": ensure => "directory", }
 
@@ -158,14 +158,14 @@ class base {
 
   package { "nfs-common": ensure => present, }
 
-  mount { "/mnt/Octopus":
-    device  => "penfold.ads.rl.ac.uk:/data_ext4_01/rd_overflow/rd_over_nfs",
-    fstype  => "nfs",
-    ensure  => "mounted",
-    options => "vers=3",
-    atboot  => true,
-    require => [File["/mnt/OctopusA"], Package["nfs-common"]],
-  }
+  # mount { "/mnt/Octopus":
+  #  device  => "penfold.ads.rl.ac.uk:/data_ext4_01/rd_overflow/rd_over_nfs",
+  #  fstype  => "nfs",
+  #  ensure  => "mounted",
+  #  options => "vers=3",
+  #  atboot  => true,
+  #  require => [File["/mnt/OctopusA"], Package["nfs-common"]],
+  # }
 
   mount { "/mnt/OctopusA":
     device  => "//130.246.69.5/OctopusA",

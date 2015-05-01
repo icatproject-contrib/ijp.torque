@@ -1,5 +1,19 @@
-Setting up the ICAT Job Portal with Puppet
-==========================================
+ijp.r92: Job Connector for IJP
+------------------------------
+
+General installation instructions are at http://code.google.com/p/icatproject/wiki/Installation
+
+Specific installation instructions are at http://www.icatproject.org/mvn/site/ijp/r92/${project.version}/installation.html
+
+All documentation on ids.server may be found at http://www.icatproject.org/mvn/site/ijp/server/${project.version}
+
+
+
+First install like any other ICAT component then do the puppet bit ...
+
+
+Setting up the ijp.r92 job connector with Puppet
+================================================
 
 All machines should have Ubuntu 12.04 or 14.04 installed and you must have ssh root access 
 either directly or using sudo from another account. Choose one machine as the server - this should 

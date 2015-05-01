@@ -28,7 +28,8 @@ public class JobManager {
 
 	@EJB
 	private JobManagementBean jobManagementBean;
-
+	
+	
 	@POST
 	@Path("cancel/{jobId}")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -37,15 +38,17 @@ public class JobManager {
 	 * Cancel the specified job if permitted to do so
 	 *  
 	 * @param jobId as returned by the call to submit
-	 * @param sessionId the icatSession id of the submitter
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 * 
 	 * @throws SessionException
 	 * @throws ForbiddenException
 	 * @throws InternalException
 	 */
-	public void cancel(@PathParam("jobId") String jobId, @FormParam("sessionId") String sessionId)
-			throws SessionException, ForbiddenException, InternalException, ParameterException {
-		jobManagementBean.cancel(sessionId, jobId);
+	public void cancel(@PathParam("jobId") String jobId, @FormParam("sessionId") String sessionId,
+			@FormParam("icatUrl") String icatUrl) throws SessionException, ForbiddenException, InternalException,
+			ParameterException {
+		jobManagementBean.cancel(jobId, sessionId, icatUrl);
 	}
 
 	@DELETE
@@ -55,16 +58,18 @@ public class JobManager {
 	 * Delete all information on the specified job if permitted to do so and if it has completed
 	 * 
 	 * @param jobId as returned by the call to submit
-	 * @param sessionId the icatSession id of the submitter
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 * 
 	 * @throws SessionException
 	 * @throws ForbiddenException
 	 * @throws InternalException
 	 * @throws ParameterException
 	 */
-	public void delete(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId)
-			throws SessionException, ForbiddenException, InternalException, ParameterException {
-		jobManagementBean.delete(sessionId, jobId);
+	public void delete(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId,
+			@QueryParam("icatUrl") String icatUrl) throws SessionException, ForbiddenException, InternalException,
+			ParameterException {
+		jobManagementBean.delete(jobId, sessionId, icatUrl);
 	}
 
 	@GET
@@ -72,14 +77,15 @@ public class JobManager {
 	@Produces(MediaType.APPLICATION_JSON)
 	/**
 	 * Return an estimate of the time to complete a batch job or to start an interactive one. 
-	 * The parameters are identical to those of submit. 
+	 * The parameters are indentical to those of submit. 
 	 * 
-	 * @param sessionId the icatSession id of the submitter
 	 * @param executable the executable name
 	 * @param parameters the executables parameters
 	 * @param interactive true if interactive else false
 	 * @param family the name of the family. A family identifies a group of user 
-	 *        accounts. If omitted the default family can be used.
+	 *        accounts. If omitted the default family can be used.	
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 *  
 	 * @return The time estimate in minutes relative to the current time. As an integer this can 
 	 *         accommodate a delay of around sixty years.
@@ -88,13 +94,12 @@ public class JobManager {
 	 * @throws SessionException
 	 * @throws ParameterException
 	 */
-	public String estimate(@QueryParam("sessionId") String sessionId,
-			@QueryParam("executable") String executable,
-			@QueryParam("parameter") List<String> parameters,
-			@QueryParam("interactive") Boolean interactive, @QueryParam("family") String family)
-			throws InternalException, SessionException, ParameterException {
-		return jobManagementBean.estimate(sessionId, executable, parameters, family,
-				interactive != null && interactive);
+	public String estimate(@QueryParam("executable") String executable,
+			@QueryParam("parameter") List<String> parameters, @QueryParam("interactive") Boolean interactive,
+			@QueryParam("family") String family, @QueryParam("sessionId") String sessionId,
+			@QueryParam("icatUrl") String icatUrl) throws InternalException, SessionException, ParameterException {
+		return jobManagementBean.estimate(executable, parameters, family, interactive != null && interactive,
+				sessionId, icatUrl);
 	}
 
 	@GET
@@ -105,7 +110,8 @@ public class JobManager {
 	 * finished running the output will be incomplete.
 	 * 
 	 * @param jobId as returned by the call to submit
-	 * @param sessionId the icatSession id of the submitter
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 * 
 	 * @return stream
 	 * 
@@ -113,10 +119,10 @@ public class JobManager {
 	 * @throws ForbiddenException
 	 * @throws InternalException
 	 */
-	public InputStream getError(@PathParam("jobId") String jobId,
-			@QueryParam("sessionId") String sessionId) throws SessionException, ForbiddenException,
-			InternalException, ParameterException {
-		return jobManagementBean.getJobOutput(sessionId, jobId, OutputType.ERROR_OUTPUT);
+	public InputStream getError(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId,
+			@QueryParam("icatUrl") String icatUrl) throws SessionException, ForbiddenException, InternalException,
+			ParameterException {
+		return jobManagementBean.getJobOutput(jobId, OutputType.ERROR_OUTPUT, sessionId, icatUrl);
 	}
 
 	@GET
@@ -127,7 +133,8 @@ public class JobManager {
 	 * finished running the output will be incomplete.
 	 * 
 	 * @param jobId as returned by the call to submit
-	 * @param sessionId the icatSession id of the submitter
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 * 
 	 * @return stream
 	 * 
@@ -136,10 +143,10 @@ public class JobManager {
 	 * @throws InternalException
 	 * @throws ParameterException
 	 */
-	public InputStream getOutput(@PathParam("jobId") String jobId,
-			@QueryParam("sessionId") String sessionId) throws SessionException, ForbiddenException,
-			InternalException, ParameterException {
-		return jobManagementBean.getJobOutput(sessionId, jobId, OutputType.STANDARD_OUTPUT);
+	public InputStream getOutput(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId,
+			@QueryParam("icatUrl") String icatUrl) throws SessionException, ForbiddenException, InternalException,
+			ParameterException {
+		return jobManagementBean.getJobOutput(jobId, OutputType.STANDARD_OUTPUT, sessionId, icatUrl);
 
 	}
 
@@ -149,17 +156,18 @@ public class JobManager {
 	/**
 	 * Get the list of jobids that may be queried by the user identified by the sessionId
 	 * 
-	 * @param sessionId
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 * 
-	 * @return list of statuses
+	 * @return list of jobids
 	 * 
 	 * @throws SessionException
 	 * @throws ParameterException
 	 * @throws InternalException
 	 */
-	public String list(@QueryParam("sessionId") String sessionId) throws SessionException,
-			ParameterException, InternalException {
-		return jobManagementBean.list(sessionId);
+	public String list(@QueryParam("sessionId") String sessionId, @QueryParam("icatUrl") String icatUrl)
+			throws SessionException, ParameterException, InternalException {
+		return jobManagementBean.list(sessionId, icatUrl);
 	}
 
 	@GET
@@ -169,7 +177,8 @@ public class JobManager {
 	 * Get the status of a specific job
 	 *  
 	 * @param jobId as returned by the call to submit
-	 * @param sessionId the icatSession id of the submitter
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 * 
 	 * @return the status as a json string
 	 * 
@@ -178,10 +187,10 @@ public class JobManager {
 	 * @throws ParameterException
 	 * @throws InternalException
 	 */
-	public String getStatus(@PathParam("jobId") String jobId,
-			@QueryParam("sessionId") String sessionId) throws SessionException, ForbiddenException,
-			ParameterException, InternalException {
-		return jobManagementBean.getStatus(jobId, sessionId);
+	public String getStatus(@PathParam("jobId") String jobId, @QueryParam("sessionId") String sessionId,
+			@QueryParam("icatUrl") String icatUrl) throws SessionException, ForbiddenException, ParameterException,
+			InternalException {
+		return jobManagementBean.getStatus(jobId, sessionId, icatUrl);
 	}
 
 	@POST
@@ -191,11 +200,12 @@ public class JobManager {
 	/**
 	 * Submit a job
 	 * 
-	 * @param sessionId the icatSession id of the submitter
 	 * @param executable the executable name
 	 * @param parameters the executables parameters
 	 * @param interactive true if interactive else false
-	 * @param family the name of the family. A family identifies a group of user accounts. If omitted the default family can be used.
+	 * @param family the name of the family. A family identifies a group of user accounts. If omitted the default family can be used.	 
+	 * @param sessionId the icat session id of the submitter
+	 * @param icatUrl the url of the icat that issued the sessionId
 	 *  
 	 * @return The job id - this could be the id assigned by the underlying batch system.
 	 * 
@@ -203,13 +213,16 @@ public class JobManager {
 	 * @throws SessionException
 	 * @throws ParameterException
 	 */
-	public String submit(@FormParam("sessionId") String sessionId,
-			@FormParam("executable") String executable,
-			@FormParam("parameter") List<String> parameters,
-			@FormParam("interactive") Boolean interactive, @FormParam("family") String family)
-			throws InternalException, SessionException, ParameterException {
-		return jobManagementBean.submit(sessionId, executable, parameters, family,
-				interactive != null && interactive);
+	public String submit(@FormParam("executable") String executable, @FormParam("parameter") List<String> parameters,
+			@FormParam("interactive") Boolean interactive, @FormParam("family") String family,
+			@FormParam("sessionId") String sessionId, @FormParam("icatUrl") String icatUrl) throws InternalException,
+			SessionException, ParameterException {
+		return jobManagementBean.submit(executable, parameters, family, interactive != null && interactive, sessionId,
+				icatUrl);
 	}
+	
+	
+
+
 
 }
