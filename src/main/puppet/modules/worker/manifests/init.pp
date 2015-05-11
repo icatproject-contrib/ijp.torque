@@ -51,26 +51,28 @@ class worker {
     mode    => 644;
   }
 
- # class { "apt":
- #   always_apt_update    => true,
- #   disable_keys         => undef,
- #   proxy_host           => false,
- #   proxy_port           => '8080',
- #   purge_sources_list   => false,
- #   purge_sources_list_d => false,
- #   purge_preferences_d  => false
- # }
+  class { 'apt':
+    update => {
+      frequency => 'always',
+    },
+  }
 
-#  apt::source { "octopus-apt":
-#    location => "http://apt.fbi-octopus.org.uk/",
-#    release  => "precise",
-#    repos    => "main",
-#  }
+  apt::source { "octopus-apt":
+    location => "http://apt.octopus.clf.rl.ac.uk/",
+    release  => "precise",
+    repos    => "main",
+  }
+  
+  apt::source { "octopus-apt-src":
+    location => "http://apt.octopus.clf.rl.ac.uk/",
+    release  => "precise",
+    repos    => "main",
+  }
 
-#  package { "lola-analysis-suite":
-#    ensure  => "latest",
-#    require => Apt::Source["octopus-apt"],
-#  }
+  package { "lola-analysis-suite":
+    ensure  => "latest",
+    require => [Apt::Source["octopus-apt"], Apt::Source["octopus-apt-src"]],
+  }
 
   file { "/opt/ijp/bin":
     source  => "puppet:///modules/worker/opt/ijp/bin",
