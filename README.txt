@@ -17,8 +17,8 @@ Setting up the ijp.r92 job connector with Puppet
 
 All machines should have Ubuntu 12.04 or 14.04 installed and you must have ssh root access 
 either directly or using sudo from another account. Choose one machine as the server - this should 
-have enough disk space to run the ICAT Data Server. All other machines (referred to as worker nodes) 
-require little disk space.
+have enough disk space to run the ICAT Data Server and also acts as the "Puppet Master". All other machines 
+(referred to as worker nodes) require little disk space.
 
 Puppet is used to do most of the work. This runs every half an hour and tries to bring each machine 
 into the correct state. You can initiate a run by "puppet agent -t" on the machine which you 
@@ -32,6 +32,9 @@ so that it will not run while it is in one of its half hourly runs.
 
 Networking
 ----------
+
+Make sure that these networking instructions are followed carefully otherwise strange errors will occur which 
+are difficult to recover from.
 
 You should ensure that on all machines the command "hostname -f" works and gives the fqdn. If not try making 
 /etc/resolv.conf a file rather than a link with:
