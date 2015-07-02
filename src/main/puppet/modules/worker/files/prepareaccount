@@ -3,10 +3,14 @@
 accountName=$1
 password=$2
 file=$3
+idleTimeout=${4:-600}
+warnDelay=${5:-60}
 
 mkdir -p ~/skel/$$/.config/openbox/
 mv $file ~/skel/$$/job.sh
-echo xterm -e "~/job.sh"  > ~/skel/$$/.config/openbox/autostart
+cp ~/skel/template/xidlekill ~/skel/$$/xidlekill
+echo xterm -e "~/job.sh" \& > ~/skel/$$/.config/openbox/autostart
+echo "~/xidlekill" $idleTimeout $warnDelay >> ~/skel/$$/.config/openbox/autostart
 echo "/usr/bin/openbox-session" > ~/skel/$$/.xsession
 
 cat <<EOF >  ~/skel/$$/.config/openbox/menu.xml

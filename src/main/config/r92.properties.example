@@ -6,6 +6,8 @@ qstat = qstat
 qsub = qsub
 prepareaccount = /home/fisher/bin/prepareaccount
 passwordDurationSeconds = 120
+idleTimeout = 600
+warnDelay = 60
 poolPrefix = pool
 reader = db username root password password
 

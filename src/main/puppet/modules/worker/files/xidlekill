@@ -1,0 +1,24 @@
+#!/bin/bash
+
+MAXIDLE=`expr $1 '*' 1000` # Amount of idle time before logout, in milliseconds
+DELAY=$2 # Amount of warning time you want to give, in seconds
+
+while [ 1 ]; do
+    if idle=`xprintidle`; then
+      if [ $idle -gt $MAXIDLE ]; then
+        echo "Session has been idle for more than $1 seconds, so warn user"
+        xmessage -buttons OK "Warning: if you remain idle for $DELAY more seconds, you will be automatically logged out." -timeout $DELAY
+        # debug
+        echo "After warning, xprintidle returns " `xprintidle`
+        if [ `xprintidle` -gt $MAXIDLE ]; then
+            echo "Session still idle, so killing..."
+            kill -TERM -1
+            break
+        fi
+      fi
+    else
+        echo "xprintidle returned non-zero status, so assume session has gone, and exit"
+        exit 1
+    fi
+    sleep 1
+done

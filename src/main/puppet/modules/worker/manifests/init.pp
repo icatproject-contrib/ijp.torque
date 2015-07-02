@@ -10,9 +10,11 @@ class worker {
 
   sudoers_entry { "batch_on_worker": }
 
-  package { "xrdp": ensure => present, }
+  package { "xrdp": ensure => "present", }
 
   package { "openbox": ensure => "present", }
+
+  package { "xprintidle": ensure => "present" }
 
   file { "/usr/local/sbin/push_output":
     ensure => "file",
@@ -28,6 +30,15 @@ class worker {
     owner   => "dmf",
     group   => "dmf",
     mode    => "0500",
+    require => User["dmf"],
+  }
+
+  file { "/home/dmf/skel/template/xidlekill":
+    ensure => "file",
+    source => "puppet:////modules/worker/xidlekill",
+    owner  => "dmf",
+    group  => "dmf",
+    mode   => "0500",
     require => User["dmf"],
   }
 

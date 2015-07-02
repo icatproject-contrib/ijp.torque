@@ -34,6 +34,11 @@ public class MachineEJB {
 	private long passwordDurationMillis;
 
 	private String prepareaccount;
+	private int idleTimeout;
+	private int warnDelay;
+	
+	private final static int DEFAULT_IDLE_TIMEOUT = 600;
+	private final static int DEFAULT_WARN_DELAY = 60;
 
 	private LoadFinder loadFinder;
 
@@ -45,6 +50,16 @@ public class MachineEJB {
 			passwordDurationMillis = props.getPositiveInt("passwordDurationSeconds") * 1000L;
 			poolPrefix = props.getString("poolPrefix");
 			prepareaccount = props.getString("prepareaccount");
+			if( props.has("idleTimeout") ){
+				idleTimeout = props.getPositiveInt("idleTimeout");
+			} else {
+				idleTimeout = DEFAULT_IDLE_TIMEOUT;
+			}
+			if( props.has("warnDelay") ){
+				warnDelay = props.getPositiveInt("warnDelay");
+			} else {
+				warnDelay = DEFAULT_WARN_DELAY;
+			}
 			logger.debug("Machine Manager Initialised");
 		} catch (CheckedPropertyException e) {
 			throw new RuntimeException("CheckedPropertyException " + e.getMessage());
@@ -90,7 +105,7 @@ public class MachineEJB {
 		}
 
 		List<String> args = Arrays.asList("ssh", lightest, prepareaccount, poolPrefix + id,
-				password, id + ".sh");
+				password, id + ".sh", String.valueOf(idleTimeout), String.valueOf(warnDelay));
 		sc = new ShellCommand(args);
 		if (sc.isError()) {
 			throw new InternalException(sc.getMessage());
