@@ -33,6 +33,14 @@ class worker {
     require => User["dmf"],
   }
 
+  file { ["/home/dmf/skel","/home/dmf/skel/template"]:
+    ensure  => "directory",
+    owner   => "dmf",
+    group   => "dmf",
+    mode    => "0755",
+    require => User["dmf"],
+  }
+
   file { "/home/dmf/skel/template/xidlekill":
     ensure => "file",
     source => "puppet:////modules/worker/xidlekill",
