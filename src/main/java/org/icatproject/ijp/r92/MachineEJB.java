@@ -224,7 +224,8 @@ public class MachineEJB {
 		for (Entry<String, String> pair : avail.entrySet()) {
 			boolean online = true;
 			for (String state : pair.getValue().split(",")) {
-				if (state.equals("offline")) {
+				if (state.equals("offline") || state.equals("down")) {
+					logger.debug(pair.getKey() + " is currently " + state);
 					online = false;
 					break;
 				}
