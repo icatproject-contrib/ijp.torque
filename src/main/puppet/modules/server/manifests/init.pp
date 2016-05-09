@@ -17,13 +17,20 @@ class server {
   	require => Common_account["dmf"],
   }
   
-  file {"/home/dmf/install/ijp.r92": 
-    ensure => "directory",
-  	source => "puppet:///modules/server/ijp.r92",
-  	recurse => "remote", 
-  	owner => "dmf",
-  	group => "dmf", 	
-  }
+#
+# 2015-11-17:
+# If we follow the 'usual' ICAT installation process,
+# the batch connector ijp.r92 (aka ijp.torque) will have been
+# installed already, so this rule is not required.
+# And wrong, as there's no ijp.r92 under server/files...
+#
+#  file {"/home/dmf/install/ijp.r92": 
+#    ensure => "directory",
+#  	source => "puppet:///modules/server/ijp.r92",
+#  	recurse => "remote", 
+#  	owner => "dmf",
+#  	group => "dmf", 	
+#  }
   	  
   file {"/etc/puppet/modules/usergen/manifests/":
   	ensure => "directory",
@@ -118,21 +125,23 @@ class server {
     group => "root",
     mode => "0644",
   }
-  
-   if $fqdn == "rclsfserv010.rc-harwell.ac.uk" {
 
-    file { "/mnt/rhubarb": ensure => "directory", }
-
-    mount { "/mnt/rhubarb":
-      device  => "rhubarb.ads.rl.ac.uk:/vol2/rallsf",
-      fstype  => "nfs",
-      ensure  => "mounted",
-      options => "user,rsize=32768,wsize=32768,hard,intr",
-      atboot  => true,
-      require => [File["/mnt/rhubarb"], Package["nfs-common"]],
-      notify  => Exec["${ids_archive_dir}"],
-    }
-
-  } 
+# 2015-11-17: BR thinks this is superseded by similar case in server_site
+#  
+#   if $fqdn == "rclsfserv010.rc-harwell.ac.uk" {
+#
+#    file { "/mnt/rhubarb": ensure => "directory", }
+#
+#    mount { "/mnt/rhubarb":
+#      device  => "rhubarb.ads.rl.ac.uk:/vol2/rallsf",
+#      fstype  => "nfs",
+#      ensure  => "mounted",
+#      options => "user,rsize=32768,wsize=32768,hard,intr",
+#      atboot  => true,
+#      require => [File["/mnt/rhubarb"], Package["nfs-common"]],
+#      notify  => Exec["${ids_archive_dir}"],
+#    }
+#
+#  } 
   
 }
