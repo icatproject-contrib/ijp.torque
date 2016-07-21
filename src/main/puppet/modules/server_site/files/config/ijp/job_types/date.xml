@@ -1,0 +1,13 @@
+<jobType>
+    <!-- 
+      A simple batch job that runs the system date command.
+      It requires no datasets, and has no options.
+    -->
+    <name>date</name>
+    <executable>date</executable>
+    <type>batch</type>
+    <!-- Job-only jobs can explicitly use "none (job only)" as their datasetType,
+         but it is OK to omit the element completely 
+    <datasetTypes>none (job only)</datasetTypes>
+    -->
+</jobType>

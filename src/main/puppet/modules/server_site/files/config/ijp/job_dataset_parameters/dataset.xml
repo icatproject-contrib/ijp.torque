@@ -1,0 +1,27 @@
+<jobDatasetType>
+   <datasetTypes>dataset</datasetTypes>
+   <jobDatasetParameter>
+        <name>numWhitelightFiles</name>
+        <query>COUNT(Datafile) &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; Datafile [datafileFormat.name IN ('whitelight/raw_image', 'whitelight_stack/raw_image')]</query>
+    </jobDatasetParameter>
+    <jobDatasetParameter>
+        <name>beadDatasetId</name>
+        <query>DatasetParameter.numericValue &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; DatasetParameter [type.name='bead_dataset']</query>
+    </jobDatasetParameter>
+    <jobDatasetParameter>
+        <name>biasDatasetId</name>
+        <query>DatasetParameter.numericValue &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; DatasetParameter [type.name='bias_dataset']</query>
+    </jobDatasetParameter>
+    <jobDatasetParameter>
+        <name>darkDatasetId</name>
+        <query>DatasetParameter.numericValue &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; DatasetParameter [type.name='dark_dataset']</query>
+    </jobDatasetParameter>
+    <jobDatasetParameter>
+        <name>flatfieldDatasetId</name>
+        <query>DatasetParameter.numericValue &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; DatasetParameter [type.name='flatfield_dataset']</query>
+    </jobDatasetParameter>
+    <jobDatasetParameter>
+        <name>checkDatasetId</name>
+        <query>DatasetParameter.numericValue &lt;-&gt; Dataset [id=${datasetId}] &lt;-&gt; DatasetParameter [type.name='check_dataset']</query>
+    </jobDatasetParameter>
+</jobDatasetType>

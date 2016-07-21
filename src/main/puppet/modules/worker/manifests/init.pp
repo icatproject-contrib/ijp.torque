@@ -43,7 +43,7 @@ class worker {
 
   file { "/home/dmf/skel/template/xidlekill":
     ensure => "file",
-    source => "puppet:////modules/worker/xidlekill",
+    source => "puppet:///modules/worker/xidlekill",
     owner  => "dmf",
     group  => "dmf",
     mode   => "0500",
@@ -93,13 +93,17 @@ class worker {
     require => [Apt::Source["octopus-apt"], Apt::Source["octopus-apt-src"]],
   }
 
-  file { "/opt/ijp/bin":
-    source  => "puppet:///modules/worker/opt/ijp/bin",
-    recurse => true,
-    purge   => false,
-    mode    => "0755"
-  }
+# BR: there is no /opt/ijp/bin in worker/files,
+# so this rule fails.  fbi-octopus adds a valid rule to worker_lsf,
+# so should it be used instead?
 
-  file { ["/opt/", "/opt/ijp"]: ensure => "directory", }
+#  file { "/opt/ijp/bin":
+#    source  => "puppet:///modules/worker/opt/ijp/bin",
+#    recurse => true,
+#    purge   => false,
+#    mode    => "0755"
+#  }
+
+#  file { ["/opt/", "/opt/ijp"]: ensure => "directory", }
 
 }

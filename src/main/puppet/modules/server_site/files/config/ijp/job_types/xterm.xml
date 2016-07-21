@@ -1,0 +1,9 @@
+<jobType>
+    <!-- 
+      A simple interactive job that runs an xterm.
+      It requires no datasets, and has no options.
+    -->
+    <name>xterm</name>
+    <executable>xterm</executable>
+    <type>interactive</type>
+</jobType>

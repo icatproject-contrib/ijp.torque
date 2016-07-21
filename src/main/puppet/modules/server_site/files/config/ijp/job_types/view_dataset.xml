@@ -1,0 +1,138 @@
+<jobType sessionId='true'>
+    <name>View Dataset new</name>
+    <executable>/opt/ijp/bin/view_dataset.py</executable>
+    <multiple>false</multiple>
+    <type>interactive</type>
+    <datasetTypes>dataset</datasetTypes>
+    <jobOptions>
+        <name>View Type</name>
+        <type>enumeration</type>
+        <programParameter>--option</programParameter>
+        <values></values>
+        <values>fullframe</values>
+	<values>fullframe-overlay</values>
+	<values>beads beads-fullframe</values>
+	<values>beads-fullframe-overlay</values>
+	<values>flats</values>
+	<values>flats-fullframe</values>
+	<values>flats-fullframe-overlay</values>
+	<values>whitelights</values>
+	<values>whitelights-fullframe</values>
+	<values>whitelights-fullframe-overlay</values>
+	<values>darks darks-fullframe</values>
+	<values>biases</values>
+	<values>biases-fullframe</values>
+    </jobOptions>
+    <jobOptions>
+        <name>View</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter></programParameter>
+        <condition></condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View (full frame)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=fullframe</programParameter>
+        <condition></condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View (full frame, overlay channels)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=fullframe-overlay</programParameter>
+        <condition></condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View beads</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=beads</programParameter>
+        <condition>beadDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View beads (full frame)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=beads-fullframe</programParameter>
+        <condition>beadDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View beads (full frame, overlay channels)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=beads-fullframe-overlay</programParameter>
+        <condition>beadDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View flats</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--flats</programParameter>
+        <condition>flatfieldDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View flats (full frame)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=flats-fullframe</programParameter>
+        <condition>flatfieldDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View flats (full frame, overlay channels)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=flats-fullframe-overlay</programParameter>
+        <condition>flatfieldDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View whitelights</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=whitelights</programParameter>
+        <condition>numWhitelightFiles&gt;0</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View whitelights (full frame)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=whitelights-fullframe</programParameter>
+        <condition>numWhitelightFiles&gt;0</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View whitelights (full frame, overlay channels)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=whitelights-fullframe-overlay</programParameter>
+        <condition>numWhitelightFiles&gt;0</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View darks</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option==darks</programParameter>
+        <condition>darkDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View darks (full frame)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=darks-fullframe</programParameter>
+        <condition>darkDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View bias</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=biases</programParameter>
+        <condition>biasDatasetId!=null</condition>
+    </jobOptions>
+    <jobOptions>
+        <name>View bias (full frame)</name>
+        <groupName>View type</groupName>
+        <type>boolean</type>
+        <programParameter>--option=biases-fullframe</programParameter>
+        <condition>biasDatasetId!=null</condition>
+    </jobOptions>
+</jobType>

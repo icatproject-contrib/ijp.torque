@@ -1,0 +1,36 @@
+<searchItems>
+    <searchItem>
+        <paramName>Formats</paramName>
+        <multipleSelect>true</multipleSelect>
+        <visibleItemCount>4</visibleItemCount>
+        <query>Datafile.id [dataset.id = ${datasetId}] &lt;-&gt; DatafileFormat [(name IN (${stringValues}))]
+        </query>
+        <listOptions>
+            <displayValue>Any format</displayValue>
+            <submitValue></submitValue>
+        </listOptions>
+        <listOptions>
+            <displayValue>TestDataFormat</displayValue>
+            <submitValue>TestDataFormat</submitValue>
+        </listOptions>
+        <listOptions>
+            <displayValue>Text</displayValue>
+            <submitValue>Text</submitValue>
+        </listOptions>
+    </searchItem>
+    <searchItem>
+        <paramName>Instrument</paramName>
+        <multipleSelect>true</multipleSelect>
+        <visibleItemCount>4</visibleItemCount>
+        <query>Datafile.id [dataset.id = ${datasetId}] &lt;-&gt; DatafileParameter [(type.name = 'instrument' AND stringValue IN (${stringValues}))]
+        </query>
+        <listOptions>
+            <displayValue>Any instrument</displayValue>
+            <submitValue></submitValue>
+        </listOptions>
+        <listOptions>
+            <displayValue>Unknown instrument</displayValue>
+            <submitValue>Unknown</submitValue>
+        </listOptions>
+    </searchItem>
+</searchItems>

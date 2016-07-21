@@ -4,7 +4,10 @@ set -e
 release=$(lsb_release -cs)
 echo "Using ubuntu codenamed $release"
 [ -d puppet/modules ] || ( echo "No puppet/modules directory"; exit 1 )
-export http_proxy=http://wwwcache.rl.ac.uk:8080 
+
+# Local proxy setting no longer needed; 
+# but off-site installations may still need to set one here
+# export http_proxy=http://wwwcache.rl.ac.uk:8080 
 
 fqdn=$(hostname -f)
 
