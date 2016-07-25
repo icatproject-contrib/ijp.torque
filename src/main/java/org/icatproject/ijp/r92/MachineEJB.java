@@ -149,7 +149,7 @@ public class MachineEJB {
 				ShellCommand sc = new ShellCommand("ssh", account.getHost(), "ps", "-F",
 						"--noheaders", "-U", poolPrefix + account.getId());
 				if (sc.getExitValue() == 1
-						&& sc.getStderr().startsWith("ERROR: User name does not exist")) {
+						&& sc.getStderr().toLowerCase().startsWith("error: user name does not exist")) {
 					/* Account seems to have vanished */
 					entityManager.remove(account);
 					deleted = true;
@@ -161,11 +161,17 @@ public class MachineEJB {
 							+ " to find proceeses for " + poolPrefix + account.getId());
 					throw new RuntimeException(sc.getMessage());
 				} else if (sc.getStdout().isEmpty()) {
-					logger.debug("No processes running for " + poolPrefix + account.getId());
+					logger.debug("No processes running for " + poolPrefix + account.getId() + " on " + account.getHost());
 					sc = new ShellCommand("ssh", account.getHost(), "sudo", "userdel", "-r",
 							poolPrefix + account.getId());
 					if (sc.isError()) {
-						throw new RuntimeException(sc.getMessage());
+						// BR, 2016-07-22: originally this threw a RuntimeException;
+						// but I think this is too extreme: (a) it is being triggered
+						// when there is no /var/mail/poolNNN directory; and (b) it prevents
+						// cleanup of other accounts (as we're in a loop here).
+						// So I have replaced the throw with a warning
+						logger.warn("userdel for " + poolPrefix + account.getId() + " on " + account.getHost() + " reported error: '" + sc.getMessage()
+								+ "'; but will assume it is OK to remove the account.");
 					}
 					logger.debug("Command userdel for " + poolPrefix + account.getId() + " on "
 							+ account.getHost() + " reports " + sc.getStdout());
@@ -220,6 +226,9 @@ public class MachineEJB {
 			throws InternalException {
 		Set<String> machines = new HashSet<String>();
 		Map<String, Float> loads = loadFinder.getLoads();
+		if( loads == null || loads.size() == 0 ){
+			logger.warn("prepareMachine: no loads returned by LoadFinder");
+		}
 		Map<String, String> avail = pbs.getStates();
 		for (Entry<String, String> pair : avail.entrySet()) {
 			boolean online = true;
@@ -244,6 +253,15 @@ public class MachineEJB {
 
 		String lightest = null;
 		for (String machine : machines) {
+			// BR, 2016-07-25 : NPE seen in the loads comparison;
+			// add logging and workaround - behave as though the machine is saturated.
+			// (This assumes that the load value is a percentage.)
+			if( loads == null || loads.get(machine) == null ){
+				logger.warn("prepareMachine: no load defined for " + machine +"; set load to 100.0");
+				loads.put(machine, new Float(100.0));
+			} else {
+				logger.debug("prepareMachine: load for " + machine + " = " + loads.get(machine));
+			}
 			if (lightest == null || loads.get(machine) < loads.get(lightest)) {
 				lightest = machine;
 			}
