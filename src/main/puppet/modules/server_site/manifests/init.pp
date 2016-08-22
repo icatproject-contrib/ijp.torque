@@ -1,6 +1,9 @@
 #
 # Server_site
 # 2015-11-17: adapted from server_lsf
+# 2016-08-22: move /mnt/Octopus here from base_site (not required on worker nodes);
+#             change Octopus device from penfold.ads.rl.ac.uk:/data_ext4_01/rd_overflow/rd_over_nfs
+#             to fdsdss48.fds.rl.ac.uk:/exportstage/data1/rd_overflow/rd_over_nfs
 #
 class server_site {
   if $fqdn == "rclsfserv010.rc-harwell.ac.uk" {
@@ -47,6 +50,19 @@ class server_site {
 
   }
 
+  file { "/mnt/Octopus":
+    ensure => "directory",
+  }
+
+  mount { "/mnt/Octopus":
+  	device => "fdsdss48.fds.rl.ac.uk:/exportstage/data1/rd_overflow/rd_over_nfs",
+  	fstype => "nfs",
+  	ensure => "mounted",
+    options => "vers=3",
+    atboot => true,
+    require => [File["/mnt/Octopus"], Package["nfs-common"]],
+  }
+    
 # BR added rule to ensure install/config/ exists
 
   file { "/home/dmf/install/config":
