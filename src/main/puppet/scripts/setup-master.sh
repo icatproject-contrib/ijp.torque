@@ -135,7 +135,7 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAt3dNnH0JlZ0aSQy6RfiL6MJHsBFrw8ulJl36z/
 chmod +r $fdir/id_rsa
 
 puppet module install puppetlabs-firewall
-puppet module install ripienaar/concat
+puppet module install puppetlabs-concat
 puppet module install puppetlabs/apt
 
 update-rc.d puppetdb defaults

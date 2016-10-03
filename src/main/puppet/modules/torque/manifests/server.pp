@@ -3,8 +3,6 @@
 #
 class torque::server {
 
-  include concat::setup
-
   service {"pbs_sched":
     ensure => running,
     hasstatus => false,
