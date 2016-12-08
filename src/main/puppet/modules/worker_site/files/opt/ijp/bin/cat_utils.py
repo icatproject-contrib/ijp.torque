@@ -1,5 +1,6 @@
 import httplib
 import urlparse
+import requests
 import zipfile
 import StringIO
 from suds.client import Client
@@ -170,9 +171,10 @@ class Session():
              datafileModTime)       
         return dfid
             
-    def storeProvenance(self, application, arguments = None, ids=[], idf=[], ods=[], odf=[]):
+    def storeProvenance(self, application, arguments = None, ids=[], idf=[], ods=[], odf=[], ijpUrl = None, ijpJobId = None):
         """
-        record provenance information
+        record provenance information.
+        If ijpUrl and ijpJobId are supplied, link the IJP job to the provenance.
         """ 
         job = self.factory.create("job")
         
@@ -205,6 +207,13 @@ class Session():
         job.application = application
         job.arguments = arguments
         job.id = self.service.create(self.sessionId, job)
+        # If we know the IJP url and jobId, tell the IJP
+        if ijpUrl and ijpJobId:
+            url = ijpUrl + '/ijp/rest/jm/job/provenance/' + ijpJobId
+            payload = {'provenanceId': job.id, 'sessionId': self.sessionId}
+            requests.post(url, data=payload, verify=False)
+
+        return job.id
  
 class Tee(threading.Thread):
     
@@ -226,6 +235,8 @@ class IjpOptionParser(OptionParser):
       --sessionId  - the ICAT session ID
       --icatUrl     - URL for the ICAT service
       --idsUrl      - URL for the IDS service
+      --ijpUrl      - URL for the IJP service
+      --ijpJobId    - the job ID used in IJP
       --datasetIds  - comma-separated list of dataset IDs
       --datafileIds - comma-separated list of datafile IDs
     The IJP will pass these options to job scripts if the job type
@@ -247,6 +258,10 @@ class IjpOptionParser(OptionParser):
                       help="ICAT url")
         self.add_option("--idsUrl", dest="idsUrl",
                       help="IDS url")
+        self.add_option("--ijpUrl", dest="ijpUrl",
+                      help="IJP url")
+        self.add_option("--ijpJobId", dest="ijpJobId",
+                      help="the job ID used in ijp")
         self.add_option("--datasetIds", dest="datasetIds",
                      help="comma-separated dataset IDs")
         self.add_option("--datafileIds", dest="datafileIds",
