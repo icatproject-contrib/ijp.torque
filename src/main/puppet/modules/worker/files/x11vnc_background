@@ -1,0 +1,21 @@
+#!/bin/bash
+
+xinit -- :0 &
+
+X_PROC_ID=$!
+
+sleep 5s
+
+x11vnc -display :0 -timeout 1200 -once -passwd "$1" &
+
+VNC_PROC_ID=$!
+
+websockify 15900 localhost:5900 &
+
+WS_PROC_ID=$!
+
+wait $VNC_PROC_ID
+
+kill $WS_PROC_ID
+
+kill $X_PROC_ID
