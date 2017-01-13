@@ -18,7 +18,7 @@ class worker {
 
   package { "x11vnc": ensure => "present" }
 
-  package { "Websockify": ensure => "latest"  }
+  package { "Websockify": ensure => "present"  }
 
   file { "/usr/local/bin/x11vnc_background",
     ensure => "file",
