@@ -20,6 +20,14 @@ class worker {
 
   package { "Websockify": ensure => "present"  }
 
+  file { "/etc/X11/Xwrapper.config",
+    ensure => "file",
+    source => "puppet:///modules/worker/Xwrapper.config",
+    owner => "root",
+    group => "root",
+    mode => "0755",
+  }
+
   file { "/usr/local/bin/x11vnc_background",
     ensure => "file",
     source => "puppet:///modules/worker/x11vnc_background",
