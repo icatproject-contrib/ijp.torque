@@ -78,13 +78,13 @@ class worker {
 
   apt::source { "octopus-apt":
     location => "http://apt.octopus.clf.rl.ac.uk/",
-    release  => "precise",
+    release  => "trusty",
     repos    => "main",
   }
   
   apt::source { "octopus-apt-src":
     location => "http://apt.octopus.clf.rl.ac.uk/",
-    release  => "precise",
+    release  => "trusty",
     repos    => "main",
   }
 
