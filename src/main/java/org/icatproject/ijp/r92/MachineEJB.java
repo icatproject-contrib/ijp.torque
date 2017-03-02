@@ -104,6 +104,8 @@ public class MachineEJB {
 			throw new InternalException(sc.getMessage());
 		}
 
+		prepareVnc(lightest, password, id);
+
 		List<String> args = Arrays.asList("ssh", lightest, prepareaccount, poolPrefix + id,
 				password, id + ".sh", String.valueOf(idleTimeout), String.valueOf(warnDelay));
 		sc = new ShellCommand(args);
@@ -118,6 +120,16 @@ public class MachineEJB {
 		account.setPassword(password);
 
 		return account;
+	}
+
+	private void prepareVnc(String lightest, String password, Long id) throws InternalException {
+		ShellCommand sc;List<String> args = Arrays.asList("ssh", lightest, prepareaccount, poolPrefix + id,
+				password, "/usr/local/bin/x11vnc_background " + password + " &",
+				String.valueOf(idleTimeout), String.valueOf(warnDelay));
+		sc = new ShellCommand(args);
+		if (sc.isError()) {
+			throw new InternalException(sc.getMessage());
+		}
 	}
 
 	@Schedule(minute = "*/1", hour = "*")
